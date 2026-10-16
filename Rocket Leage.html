@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>3D Rocket League Mini - Upgraded AI & Gameplay</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #87CEEB;
+            font-family: 'Rajdhani', sans-serif;
+            user-select: none;
+        }
+        
+        /* Main Menu Overlay */
+        #mainMenu, #difficultyMenu {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #1b2735 0%, #090a0f 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+        #difficultyMenu {
+            display: none;
+        }
+        #menuTitle {
+            font-size: 80px;
+            font-weight: 700;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            text-shadow: 0 0 20px rgba(0, 168, 255, 0.6), 0 0 10px rgba(0, 168, 255, 0.4);
+            margin-bottom: 50px;
+        }
+        .menu-btn {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            padding: 15px 60px;
+            margin: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-left: 6px solid #00a8ff;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        .menu-btn:hover {
+            background: rgba(0, 168, 255, 0.2);
+            border-left-color: #00e5ff;
+            box-shadow: 0 8px 24px rgba(0, 168, 255, 0.4);
+            transform: translateY(-2px);
+        }
+
+        /* In-Game UI Overlay */
+        #ui {
+            display: none;
+            position: absolute;
+            top: 20px;
+            width: 100%;
+            text-align: center;
+            color: white;
+            z-index: 10;
+            pointer-events: none;
+        }
+        
+        #scoreBoardWrapper {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #scoreBoard {
+            display: inline-flex;
+            align-items: center;
+            background: rgba(10, 15, 25, 0.75);
+            backdrop-filter: blur(8px);
+            padding: 10px 40px;
+            border-radius: 12px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            font-size: 48px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+        .blue { color: #00d2ff; text-shadow: 0 0 10px rgba(0, 210, 255, 0.5); margin-right: 20px; }
+        .red { color: #ff3366; text-shadow: 0 0 10px rgba(255, 51, 102, 0.5); margin-left: 20px; }
+        #timerText { 
+            color: #ffffff; 
+            margin: 0 25px;
+            font-size: 54px;
+            background: rgba(0,0,0,0.4);
+            padding: 0 20px;
+            border-radius: 8px;
+        }
+        
+        /* Goal Banner Overlay */
+        #goalBanner {
+            display: none;
+            position: absolute;
+            top: 40%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 96px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 6px;
+            z-index: 50;
+            pointer-events: none;
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes popIn {
+            0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0; }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        /* Training Stats & Countdown Display */
+        #trainingStats {
+            display: none;
+            font-size: 28px;
+            color: #00e5ff;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
+            background: rgba(0,0,0,0.6);
+            padding: 5px 20px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        #countdownText {
+            color: #ff3366;
+            font-size: 40px;
+            font-weight: 700;
+            margin-top: 5px;
+            text-shadow: 0 0 10px rgba(255, 51, 102, 0.6);
+        }
+
+        #instructions {
+            font-size: 20px;
+            margin-top: 15px;
+            color: #cccccc;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px 20px;
+            border-radius: 8px;
+            display: inline-block;
+            letter-spacing: 1px;
+            font-weight: 500;
+        }
+        
+        /* Training Options Menu */
+        #optionsMenu {
+            display: none;
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 20;
+            background: rgba(10, 15, 25, 0.8);
+            backdrop-filter: blur(5px);
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 4px solid #FFC107;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+        }
+        .option-btn {
+            font-family: 'Rajdhani', sans-serif;
+            display: block;
+            width: 100%;
+            margin-bottom: 12px;
+            padding: 12px 20px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffffff;
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .option-btn:hover {
+            background-color: rgba(255, 193, 7, 0.3);
+            border-color: #FFC107;
+            color: #FFC107;
+        }
+        .option-btn:last-child {
+            margin-bottom: 0;
+        }
+
+        /* Game Over Screen */
+        #gameOverScreen {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 15, 25, 0.9);
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 200;
+            color: white;
+        }
+        #winnerText {
+            font-size: 90px;
+            font-weight: 700;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(255,255,255,0.5);
+            letter-spacing: 4px;
+        }
+        .play-again-btn {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 32px;
+            font-weight: 700;
+            padding: 15px 50px;
+            background: #00d2ff;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(0, 210, 255, 0.4);
+            pointer-events: auto;
+            text-transform: uppercase;
+            transition: all 0.3s;
+        }
+        .play-again-btn:hover {
+            background: #00e5ff;
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 229, 255, 0.6);
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <div id="mainMenu">
+        <div id="menuTitle">ROCKET LEAGUE MINI</div>
+        <button class="menu-btn" onclick="startGameMode('training')">TRAINING</button>
+        <button class="menu-btn" onclick="showDifficultyMenu()">GAME VS AI</button>
+    </div>
+
+    <div id="difficultyMenu">
+        <div id="menuTitle">SELECT DIFFICULTY</div>
+        <button class="menu-btn" onclick="startAiGame('easy')">EASY</button>
+        <button class="menu-btn" onclick="startAiGame('hard')">HARD</button>
+        <button class="menu-btn" onclick="startAiGame('pro')">PRO</button>
+        <button class="menu-btn" onclick="backToMainMenu()" style="border-left-color: #777; margin-top: 30px;">BACK</button>
+    </div>
+
+    <div id="optionsMenu">
+        <button class="option-btn" onclick="resetBallCenter()" onfocus="this.blur()">Reset Ball (R)</button>
+        <button class="option-btn" onclick="teleportBallToCar()" onfocus="this.blur()">Ball to Car (T)</button>
+        <button class="option-btn" onclick="startDefendMode()" onfocus="this.blur()">Defend Mode (Y)</button>
+    </div>
+
+    <div id="ui">
+        <div id="scoreBoardWrapper">
+            <div id="trainingStats" style="display: none;">
+                DEFEND MODE | LEVEL: <span id="defendLevel">1</span>
+                <div id="countdownText"></div>
+            </div>
+            <div id="scoreBoard">
+                <span class="blue">BLUE <span id="blueScore">0</span></span> 
+                <span id="timerText"><span id="timeDisplay">1:00</span></span>
+                <span class="red"><span id="redScore">0</span> RED</span>
+            </div>
+            <div id="instructions">
+                <strong>ARROWS:</strong> DRIVE | <strong>W:</strong> JUMP <em>(DOUBLE-TAP W = FLIP)</em> | <strong>SPACE:</strong> BOOST<br>
+                <strong>Q / E:</strong> TILT UP / DOWN | <strong>P:</strong> BALL CAM (<span id="ballCamStatus" style="color: #ff3366;">OFF</span>)
+            </div>
+        </div>
+    </div>
+
+    <div id="goalBanner">GOAL!</div>
+
+    <div id="gameOverScreen" style="display: none;">
+        <div id="winnerText">TIME'S UP!</div>
+        <button class="play-again-btn" onclick="location.reload()">MAIN MENU</button>
+    </div>
+
+    <script>
+        let currentMode = null; 
+        let gameDifficulty = 'hard'; 
+        let isDefendActive = false;
+        let defenseLevel = 1;
+        let ballWasHitInDefense = false;
+        let isCountingDown = false;
+        let countdownFrames = 0;
+        let pendingShot = null;
+        let ballCamActive = false;
+        let shakeIntensity = 0;
+
+        // --- 1. SETUP SCENE, CAMERA, RENDERER ---
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0a0f19); 
+        
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        document.body.appendChild(renderer.domElement);
+
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+        scene.add(ambientLight);
+        
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(50, 150, 50);
+        dirLight.castShadow = true;
+        dirLight.shadow.camera.left = -200;
+        dirLight.shadow.camera.right = 200;
+        dirLight.shadow.camera.top = 200;
+        dirLight.shadow.camera.bottom = -200;
+        scene.add(dirLight);
+
+        // --- 2. CREATE STADIUM & UPGRADED GOALS ---
+        const fieldWidth = 200;
+        const fieldLength = 400;
+        const ceilingHeight = 120; 
+
+        const fieldGeo = new THREE.PlaneGeometry(fieldWidth, fieldLength);
+        const fieldMat = new THREE.MeshStandardMaterial({ color: 0x1e3a20, roughness: 0.6, metalness: 0.2 });
+        const field = new THREE.Mesh(fieldGeo, fieldMat);
+        field.rotation.x = -Math.PI / 2;
+        field.receiveShadow = true;
+        scene.add(field);
+
+        const wallMat = new THREE.MeshLambertMaterial({ color: 0xffffff, transparent: true, opacity: 0.15 });
+        function createWall(w, h, d, x, z) {
+            const geo = new THREE.BoxGeometry(w, h, d);
+            const mesh = new THREE.Mesh(geo, wallMat);
+            mesh.position.set(x, h/2, z);
+            scene.add(mesh);
+        }
+        createWall(fieldWidth, ceilingHeight, 2, 0, -fieldLength/2); 
+        createWall(fieldWidth, ceilingHeight, 2, 0, fieldLength/2);  
+        createWall(2, ceilingHeight, fieldLength, -fieldWidth/2, 0); 
+        createWall(2, ceilingHeight, fieldLength, fieldWidth/2, 0);  
+
+        // Particle System Container
+        let goalParticles = [];
+        function createGoalExplosion(x, y, z, colorHex) {
+            shakeIntensity = 2.5;
+            const particleCount = 120;
+            const pGeo = new THREE.SphereGeometry(0.8, 8, 8);
+            const pMat = new THREE.MeshBasicMaterial({ color: colorHex, transparent: true, opacity: 1 });
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = new THREE.Mesh(pGeo, pMat.clone());
+                particle.position.set(x, y, z);
+                
+                const speed = 2 + Math.random() * 4;
+                const theta = Math.random() * Math.PI * 2;
+                const phi = (Math.random() - 0.5) * Math.PI;
+
+                particle.userData = {
+                    vx: Math.cos(theta) * Math.cos(phi) * speed,
+                    vy: Math.sin(phi) * speed + 1,
+                    vz: Math.sin(theta) * Math.cos(phi) * speed,
+                    life: 1.0
+                };
+
+                scene.add(particle);
+                goalParticles.push(particle);
+            }
+        }
+
+        function updateGoalExplosions() {
+            for (let i = goalParticles.length - 1; i >= 0; i--) {
+                const p = goalParticles[i];
+                p.position.x += p.userData.vx;
+                p.position.y += p.userData.vy;
+                p.position.z += p.userData.vz;
+
+                p.userData.vy -= 0.08; // Gravity
+                p.userData.life -= 0.02;
+                p.material.opacity = p.userData.life;
+
+                if (p.userData.life <= 0) {
+                    scene.remove(p);
+                    p.geometry.dispose();
+                    p.material.dispose();
+                    goalParticles.splice(i, 1);
+                }
+            }
+        }
+
+        // --- UPGRADED ROCKET LEAGUE GOALS ---
+        function createUpgradedGoal(colorHex, zPos, isBlue) {
+            const goalGroup = new THREE.Group();
+            const width = 50, height = 24, depth = 15;
+            const thickness = 1.2;
+
+            // 1. Neon Glowing Goal Frame (Posts & Bar)
+            const frameMat = new THREE.MeshStandardMaterial({
+                color: colorHex,
+                emissive: colorHex,
+                emissiveIntensity: 2.5,
+                roughness: 0.2
+            });
+
+            // Left Post
+            const leftPost = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, thickness), frameMat);
+            leftPost.position.set(-width/2, height/2, 0);
+            goalGroup.add(leftPost);
+
+            // Right Post
+            const rightPost = new THREE.Mesh(new THREE.BoxGeometry(thickness, height, thickness), frameMat);
+            rightPost.position.set(width/2, height/2, 0);
+            goalGroup.add(rightPost);
+
+            // Crossbar
+            const crossbar = new THREE.Mesh(new THREE.BoxGeometry(width + thickness, thickness, thickness), frameMat);
+            crossbar.position.set(0, height, 0);
+            goalGroup.add(crossbar);
+
+            // 2. Energetic Forcefield Net (Wireframe Grid)
+            const netGeo = new THREE.BoxGeometry(width, height, depth);
+            const netMat = new THREE.MeshStandardMaterial({
+                color: colorHex,
+                wireframe: true,
+                emissive: colorHex,
+                emissiveIntensity: 0.6,
+                transparent: true,
+                opacity: 0.4
+            });
+            const netMesh = new THREE.Mesh(netGeo, netMat);
+            netMesh.position.set(0, height/2, isBlue ? -depth/2 : depth/2);
+            goalGroup.add(netMesh);
+
+            // 3. Glowing Back Wall Target
+            const backWallGeo = new THREE.PlaneGeometry(width, height);
+            const backWallMat = new THREE.MeshBasicMaterial({
+                color: colorHex,
+                transparent: true,
+                opacity: 0.2,
+                side: THREE.DoubleSide
+            });
+            const backWall = new THREE.Mesh(backWallGeo, backWallMat);
+            backWall.position.set(0, height/2, isBlue ? -depth : depth);
+            goalGroup.add(backWall);
+
+            // 4. Ground Goal Line Projection
+            const lineGeo = new THREE.PlaneGeometry(width, 2);
+            const lineMat = new THREE.MeshBasicMaterial({ color: colorHex, side: THREE.DoubleSide });
+            const line = new THREE.Mesh(lineGeo, lineMat);
+            line.rotation.x = -Math.PI / 2;
+            line.position.set(0, 0.1, 0);
+            goalGroup.add(line);
+
+            // Dynamic Point Light for Goal Mouth Glow
+            const goalLight = new THREE.PointLight(colorHex, 3, 60);
+            goalLight.position.set(0, height/2, 0);
+            goalGroup.add(goalLight);
+
+            goalGroup.position.set(0, 0, zPos);
+            scene.add(goalGroup);
+            return goalGroup;
+        }
+
+        const blueGoal = createUpgradedGoal(0x00a8ff, -fieldLength/2 + 2, true); 
+        const redGoal = createUpgradedGoal(0xff3366, fieldLength/2 - 2, false);   
+
+        // --- CAR BUILDER ---
+        function createUpgradedCar(colorHex) {
+            const carGroup = new THREE.Group();
+            
+            const chassisGeo = new THREE.BoxGeometry(4, 1.5, 6);
+            const chassisMat = new THREE.MeshStandardMaterial({ color: colorHex, metalness: 0.7, roughness: 0.2 });
+            const chassis = new THREE.Mesh(chassisGeo, chassisMat);
+            chassis.castShadow = true;
+            carGroup.add(chassis);
+            
+            carGroup.material = chassisMat; 
+
+            const cabinGeo = new THREE.BoxGeometry(3, 1.2, 3.5);
+            const cabinMat = new THREE.MeshStandardMaterial({ color: 0x111111, metalness: 0.9, roughness: 0.1 });
+            const cabin = new THREE.Mesh(cabinGeo, cabinMat);
+            cabin.position.set(0, 1.3, -0.5);
+            cabin.castShadow = true;
+            carGroup.add(cabin);
+
+            const wheelGeo = new THREE.CylinderGeometry(0.8, 0.8, 1, 16);
+            const wheelMat = new THREE.MeshStandardMaterial({ color: 0x050505, roughness: 0.9 });
+            const wheelPositions = [
+                [-2.2, -0.4, 2],
+                [2.2, -0.4, 2],
+                [-2.2, -0.4, -2],
+                [2.2, -0.4, -2]
+            ];
+            wheelPositions.forEach(pos => {
+                const wheel = new THREE.Mesh(wheelGeo, wheelMat);
+                wheel.rotation.z = Math.PI / 2;
+                wheel.position.set(pos[0], pos[1], pos[2]);
+                wheel.castShadow = true;
+                carGroup.add(wheel);
+            });
+
+            const lightGeo = new THREE.BoxGeometry(1, 0.4, 0.1);
+            const lightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+            const lightL = new THREE.Mesh(lightGeo, lightMat);
+            lightL.position.set(-1.2, 0.2, 3.01);
+            const lightR = new THREE.Mesh(lightGeo, lightMat);
+            lightR.position.set(1.2, 0.2, 3.01);
+            carGroup.add(lightL);
+            carGroup.add(lightR);
+            
+            const tailMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const tailL = new THREE.Mesh(lightGeo, tailMat);
+            tailL.position.set(-1.2, 0.2, -3.01);
+            const tailR = new THREE.Mesh(lightGeo, tailMat);
+            tailR.position.set(1.2, 0.2, -3.01);
+            carGroup.add(tailL);
+            carGroup.add(tailR);
+
+            return carGroup;
+        }
+
+        // --- 3. GAME OBJECTS ---
+        const car = {
+            x: 0, y: 1, z: -50, vy: 0, angle: 0, pitch: 0, speed: 0, color: 0x00a8ff, 
+            isBoosting: false, isFlipping: false, flipFrames: 0, lastWTime: 0, prevW: false
+        };
+        car.mesh = createUpgradedCar(car.color);
+        car.mesh.rotation.order = "YXZ"; 
+        scene.add(car.mesh);
+
+        const aiCar = {
+            x: 0, y: 1, z: 50, vy: 0, angle: Math.PI, pitch: 0, speed: 0, color: 0xff3366, 
+            isBoosting: false, isFlipping: false, flipFrames: 0, lastWTime: 0, prevW: false
+        };
+        aiCar.mesh = createUpgradedCar(aiCar.color);
+        aiCar.mesh.rotation.order = "YXZ";
+        scene.add(aiCar.mesh);
+
+        const ball = {
+            x: 0, y: 6, z: 0, vx: 0, vy: 0, vz: 0, radius: 4.5
+        };
+        const ballGeo = new THREE.SphereGeometry(ball.radius, 32, 32);
+        const ballMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.3, emissive: 0x222222 });
+        ball.mesh = new THREE.Mesh(ballGeo, ballMat);
+        ball.mesh.castShadow = true;
+        scene.add(ball.mesh);
+
+        // --- 4. INPUT HANDLING ---
+        const keys = {};
+        window.addEventListener("keydown", (e) => { 
+            const key = e.key.toLowerCase();
+            keys[key] = true; 
+            if(["arrowup","arrowdown","arrowleft","arrowright"," ", "w", "q", "e", "p"].includes(key)) {
+                e.preventDefault();
+            }
+
+            if (key === 'p') {
+                ballCamActive = !ballCamActive;
+                let statusEl = document.getElementById("ballCamStatus");
+                if (statusEl) {
+                    statusEl.innerText = ballCamActive ? "ON" : "OFF";
+                    statusEl.style.color = ballCamActive ? "#00e5ff" : "#ff3366";
+                }
+            }
+
+            if (currentMode === 'training') {
+                if(key === 'r') { isDefendActive = false; isCountingDown = false; document.getElementById("trainingStats").style.display = "none"; resetBallCenter(); }
+                if(key === 't') { isDefendActive = false; isCountingDown = false; document.getElementById("trainingStats").style.display = "none"; teleportBallToCar(); }
+                if(key === 'y') startDefendMode();
+            }
+        });
+        window.addEventListener("keyup", (e) => { keys[e.key.toLowerCase()] = false; });
+        window.addEventListener("resize", () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // --- 5. GAME LOGIC & MENU CONTROLS ---
+        let blueScore = 0;
+        let redScore = 0;
+        let timeLeft = 60;
+        let gameActive = false;
+        const timeDisplay = document.getElementById("timeDisplay");
+
+        let timerInterval = null;
+
+        function triggerGoalUI(teamName, colorStyle) {
+            const banner = document.getElementById("goalBanner");
+            banner.innerText = teamName + " SCORED!";
+            banner.style.color = colorStyle;
+            banner.style.textShadow = `0 0 20px ${colorStyle}`;
+            banner.style.display = "block";
+
+            setTimeout(() => {
+                banner.style.display = "none";
+            }, 1500);
+        }
+
+        function showDifficultyMenu() {
+            document.getElementById("mainMenu").style.display = "none";
+            document.getElementById("difficultyMenu").style.display = "flex";
+        }
+
+        function backToMainMenu() {
+            document.getElementById("difficultyMenu").style.display = "none";
+            document.getElementById("mainMenu").style.display = "flex";
+        }
+
+        function startGameMode(mode) {
+            currentMode = mode;
+            isDefendActive = false;
+            isCountingDown = false;
+            document.getElementById("mainMenu").style.display = "none";
+            document.getElementById("difficultyMenu").style.display = "none";
+            document.getElementById("ui").style.display = "block";
+            document.getElementById("trainingStats").style.display = "none";
+
+            if (mode === 'training') {
+                document.getElementById("optionsMenu").style.display = "block";
+                document.getElementById("timerText").style.display = "none"; 
+                aiCar.mesh.visible = false; 
+            }
+            resetPositions();
+        }
+
+        function startAiGame(difficulty) {
+            gameDifficulty = difficulty;
+            startGameMode('game');
+            
+            document.getElementById("optionsMenu").style.display = "none";
+            document.getElementById("timerText").style.display = "inline";
+            aiCar.mesh.visible = true; 
+            
+            gameActive = true;
+            timeLeft = 60;
+            blueScore = 0;
+            redScore = 0;
+            document.getElementById("blueScore").innerText = blueScore;
+            document.getElementById("redScore").innerText = redScore;
+
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!gameActive) return;
+                
+                timeLeft--;
+                let m = Math.floor(timeLeft / 60);
+                let s = timeLeft % 60;
+                timeDisplay.innerText = m + ":" + (s < 10 ? "0" : "") + s;
+
+                if (timeLeft <= 0) {
+                    gameActive = false;
+                    clearInterval(timerInterval);
+                    document.getElementById("gameOverScreen").style.display = "flex";
+                    
+                    let winnerMsg = "IT'S A TIE!";
+                    if (blueScore > redScore) winnerMsg = "BLUE WINS!";
+                    if (redScore > blueScore) winnerMsg = "RED WINS!";
+                    document.getElementById("winnerText").innerText = winnerMsg;
+                }
+            }, 1000);
+        }
+
+        function resetBallCenter() {
+            ball.x = 0; ball.y = 10; ball.z = 0; 
+            ball.vx = 0; ball.vy = 0; ball.vz = 0;
+        }
+
+        function teleportBallToCar() {
+            ball.x = car.x + Math.sin(car.angle) * 15;
+            ball.z = car.z + Math.cos(car.angle) * 15;
+            ball.y = car.y + 6; 
+            ball.vx = 0; ball.vy = 0; ball.vz = 0;
+        }
+
+        function startDefendMode() {
+            if (currentMode !== 'training') return;
+            isDefendActive = true;
+            
+            if (gameDifficulty === 'easy') defenseLevel = 1;
+            else if (gameDifficulty === 'pro') defenseLevel = 5;
+            else defenseLevel = 3;
+
+            document.getElementById("defendLevel").innerText = defenseLevel;
+            document.getElementById("trainingStats").style.display = "inline-block";
+            prepareDefendShot();
+        }
+
+        function prepareDefendShot() {
+            ballWasHitInDefense = false;
+            car.x = 0; car.y = 1; car.z = -170; car.angle = 0; car.speed = 0; car.vy = 0; car.pitch = 0; car.isFlipping = false;
+
+            let offsetX = (Math.random() - 0.5) * (30 + defenseLevel * 10);
+            offsetX = Math.max(-80, Math.min(80, offsetX));
+            
+            ball.x = offsetX;
+            ball.y = 4 + Math.random() * (defenseLevel * 2); 
+            ball.z = 100; 
+            ball.vx = 0; ball.vy = 0; ball.vz = 0;
+
+            let targetX = (Math.random() - 0.5) * 16;
+            let targetZ = -200;
+            
+            let dx = targetX - ball.x;
+            let dz = targetZ - ball.z;
+            let dist = Math.sqrt(dx*dx + dz*dz);
+            
+            let speed = 2.0 + (defenseLevel * 0.7); 
+            
+            pendingShot = {
+                vx: (dx / dist) * speed,
+                vz: (dz / dist) * speed,
+                vy: 0.5 + (defenseLevel * 0.15)
+            };
+
+            isCountingDown = true;
+            countdownFrames = 180;
+        }
+
+        function resetPositions() {
+            car.x = 0; car.y = 1; car.z = -50; car.speed = 0; car.angle = 0; car.vy = 0; car.pitch = 0; car.isFlipping = false;
+            aiCar.x = 0; aiCar.y = 1; aiCar.z = 50; aiCar.speed = 0; aiCar.angle = Math.PI; aiCar.vy = 0; aiCar.pitch = 0; aiCar.isFlipping = false;
+            resetBallCenter();
+        }
+
+        function updateCar(c, isPlayer) {
+            let accel = c.isBoosting ? 0.08 : 0.03;
+            let canControl = (currentMode === 'training' || (currentMode === 'game' && gameActive));
+
+            if (isPlayer) {
+                if (canControl) {
+                    c.isBoosting = keys[" "];
+                    if (keys["arrowup"]) c.speed += accel;
+                    if (keys["arrowdown"]) c.speed -= 0.03;
+                    if (keys["arrowleft"]) c.angle += 0.05;
+                    if (keys["arrowright"]) c.angle -= 0.05;
+                    
+                    if (keys["w"] && !c.prevW) {
+                        let now = Date.now();
+                        if (now - c.lastWTime < 300 && c.y > 1 && !c.isFlipping) {
+                            c.isFlipping = true;
+                            c.flipFrames = 20; 
+                            c.vy += 0.15; 
+                            c.speed += 0.5; 
+                        } else if (c.y <= 1.01) {
+                            c.vy = 0.6; 
+                        }
+                        c.lastWTime = now;
+                    }
+                    c.prevW = keys["w"];
+
+                    if ((keys["arrowup"] || keys[" "]) && c.y > 1) {
+                        c.vy += Math.sin(c.pitch) * accel * 1.5; 
+                    }
+                } else {
+                    c.isBoosting = false; 
+                }
+            } else {
+                // --- ADVANCED & SMART AI LOGIC ---
+                if (currentMode === 'game' && gameActive) {
+                    // 1. Ball Trajectory Prediction (Predict where ball will be)
+                    const timeStep = 15; // Predict 15 frames into the future
+                    let predX = ball.x + ball.vx * timeStep;
+                    let predZ = ball.z + ball.vz * timeStep;
+                    let predY = ball.y + ball.vy * timeStep;
+
+                    // Clamp predictions inside pitch boundaries
+                    predX = Math.max(-fieldWidth/2 + 10, Math.min(fieldWidth/2 - 10, predX));
+                    predZ = Math.max(-fieldLength/2 + 10, Math.min(fieldLength/2 - 10, predZ));
+
+                    let targetX, targetZ;
+                    const blueGoalZ = -fieldLength / 2; // Target goal for AI (Red Team)
+                    const redGoalZ = fieldLength / 2;   // AI's own goal to defend
+
+                    // Determine if AI needs to defend or attack
+                    let isBehindBall = c.z > predZ + 5;
+
+                    if (!isBehindBall) {
+                        // AI is in front of the ball -> Retreat back to defensive position to get behind it
+                        targetX = predX * 0.5;
+                        targetZ = Math.min(redGoalZ - 40, predZ + 50);
+                    } else {
+                        // AI is behind the ball -> Calculate optimal striking angle to hit ball towards Player Goal
+                        let goalDx = 0 - predX;
+                        let goalDz = blueGoalZ - predZ;
+                        let angleToGoal = Math.atan2(goalDx, goalDz);
+
+                        // Offset target slightly behind the ball aligned with the goal direction
+                        let strikeOffset = 7;
+                        targetX = predX - Math.sin(angleToGoal) * strikeOffset;
+                        targetZ = predZ - Math.cos(angleToGoal) * strikeOffset;
+                    }
+
+                    // 2. Steering & Angle Math
+                    let dx = targetX - c.x;
+                    let dz = targetZ - c.z;
+                    let distToTarget = Math.sqrt(dx * dx + dz * dz);
+                    let targetAngle = Math.atan2(dx, dz);
+                    let angleDiff = targetAngle - c.angle;
+
+                    // Normalize angle difference to [-PI, PI]
+                    while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                    while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+
+                    // Difficulty tuning parameters
+                    let turnSpeed = 0.07;
+                    let boostThreshold = 0.4;
+                    if (gameDifficulty === 'easy') { turnSpeed = 0.04; boostThreshold = 0.2; }
+                    else if (gameDifficulty === 'pro') { turnSpeed = 0.11; boostThreshold = 0.6; }
+
+                    // Smooth Steering Control
+                    if (Math.abs(angleDiff) > 0.05) {
+                        c.angle += Math.sign(angleDiff) * Math.min(turnSpeed, Math.abs(angleDiff));
+                    }
+
+                    // Smart Acceleration & Boosting
+                    c.isBoosting = (Math.abs(angleDiff) < boostThreshold && distToTarget > 12);
+                    let topAccel = c.isBoosting ? (gameDifficulty === 'pro' ? 0.11 : 0.08) : 0.04;
+                    c.speed += topAccel;
+
+                    // 3. Smart Jumping, Aerials & Flips
+                    let distToBall2D = Math.sqrt((predX - c.x)**2 + (predZ - c.z)**2);
+
+                    // Aerial / Jump Shot when ball is airborne
+                    if (predY > 4 && predY < 25 && distToBall2D < 20 && c.y <= 1.01) {
+                        c.vy = (gameDifficulty === 'easy') ? 0.5 : (gameDifficulty === 'pro' ? 0.85 : 0.7);
+                    }
+
+                    // Forward Flip for powerful strikes or quick closing speed
+                    if (c.y > 1.2 && distToBall2D < 14 && !c.isFlipping && Math.abs(angleDiff) < 0.3) {
+                        c.isFlipping = true;
+                        c.flipFrames = 20;
+                        c.vy += 0.2;
+                        c.speed += 0.6;
+                    }
+                } else {
+                    c.isBoosting = false;
+                }
+            }
+
+            // Air Control Pitch Tuning
+            if (c.y > 1) {
+                if (isPlayer) {
+                    if (keys["q"]) c.pitch += 0.05;
+                    if (keys["e"]) c.pitch -= 0.05;
+                }
+            } else {
+                c.pitch *= 0.8; 
+            }
+
+            // Friction & Speed Clamping
+            c.speed *= 0.97;
+            let maxSpeed = c.isBoosting ? 2.2 : 1.3;
+            c.speed = Math.max(-0.6, Math.min(maxSpeed, c.speed));
+
+            // Movement physics
+            c.x += Math.sin(c.angle) * c.speed;
+            c.z += Math.cos(c.angle) * c.speed;
+
+            // Vertical Jump Physics & Flipping Animation
+            c.y += c.vy;
+            c.vy -= 0.03; // Gravity
+
+            if (c.y <= 1) {
+                c.y = 1;
+                c.vy = 0;
+                c.isFlipping = false;
+            }
+
+            if (c.isFlipping) {
+                c.mesh.rotation.x += 0.35;
+                c.flipFrames--;
+                if (c.flipFrames <= 0) c.isFlipping = false;
+            } else {
+                c.mesh.rotation.x = c.pitch;
+            }
+
+            // Arena Wall Collisions
+            c.x = Math.max(-fieldWidth/2 + 4, Math.min(fieldWidth/2 - 4, c.x));
+            c.z = Math.max(-fieldLength/2 + 4, Math.min(fieldLength/2 - 4, c.z));
+
+            // Sync 3D Mesh
+            c.mesh.position.set(c.x, c.y, c.z);
+            c.mesh.rotation.y = c.angle;
+        }
+
+        // --- 6. PHYSICS & GOAL DETECTION ---
+        function updatePhysics() {
+            // Defend mode training timer tick
+            if (isCountingDown) {
+                countdownFrames--;
+                let seconds = Math.ceil(countdownFrames / 60);
+                document.getElementById("countdownText").innerText = seconds > 0 ? seconds : "SHOT!";
+                
+                if (countdownFrames <= 0) {
+                    isCountingDown = false;
+                    document.getElementById("countdownText").innerText = "";
+                    if (pendingShot) {
+                        ball.vx = pendingShot.vx;
+                        ball.vz = pendingShot.vz;
+                        ball.vy = pendingShot.vy;
+                        pendingShot = null;
+                    }
+                }
+            }
+
+            updateCar(car, true);
+            updateCar(aiCar, false);
+
+            // Ball Physics Updates
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+            ball.z += ball.vz;
+
+            ball.vy -= 0.025; // Gravity
+            ball.vx *= 0.99;  // Air Resistance
+            ball.vz *= 0.99;
+
+            // Bounce on Pitch Floor
+            if (ball.y <= ball.radius) {
+                ball.y = ball.radius;
+                ball.vy = -ball.vy * 0.65;
+            }
+
+            // Arena Side Wall Bounces
+            if (Math.abs(ball.x) >= fieldWidth/2 - ball.radius) {
+                ball.x = Math.sign(ball.x) * (fieldWidth/2 - ball.radius);
+                ball.vx = -ball.vx * 0.8;
+            }
+
+            // Arena Back Wall & Goal Detection Logic
+            if (Math.abs(ball.z) >= fieldLength/2 - ball.radius) {
+                // Goal Dimensions Check
+                if (Math.abs(ball.x) < 23 && ball.y < 22) {
+                    // GOAL SCORED!
+                    if (ball.z < 0) {
+                        // Red Team Scored in Blue Goal
+                        redScore++;
+                        document.getElementById("redScore").innerText = redScore;
+                        createGoalExplosion(ball.x, ball.y, ball.z, 0xff3366);
+                        triggerGoalUI("RED", "#ff3366");
+                    } else {
+                        // Blue Team Scored in Red Goal
+                        blueScore++;
+                        document.getElementById("blueScore").innerText = blueScore;
+                        createGoalExplosion(ball.x, ball.y, ball.z, 0x00a8ff);
+                        triggerGoalUI("BLUE", "#00d2ff");
+                    }
+                    resetPositions();
+                } else {
+                    // Regular Wall Bounce
+                    ball.z = Math.sign(ball.z) * (fieldLength/2 - ball.radius);
+                    ball.vz = -ball.vz * 0.8;
+                }
+            }
+
+            // Car-Ball Sphere Collision Resolution
+            [car, aiCar].forEach((c, index) => {
+                if (index === 1 && currentMode === 'training') return; // Skip hidden AI in training mode
+
+                let dx = ball.x - c.x;
+                let dy = ball.y - c.y;
+                let dz = ball.z - c.z;
+                let dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+                if (dist < ball.radius + 3.0) {
+                    let overlap = (ball.radius + 3.0) - dist;
+                    let nx = dx / dist;
+                    let ny = dy / dist;
+                    let nz = dz / dist;
+
+                    ball.x += nx * overlap;
+                    ball.y += ny * overlap;
+                    ball.z += nz * overlap;
+
+                    let hitForce = Math.max(0.8, Math.abs(c.speed) * 1.6 + (c.isFlipping ? 1.2 : 0.4));
+                    ball.vx = nx * hitForce * 1.5;
+                    ball.vy = Math.max(0.3, ny * hitForce * 1.2 + 0.2);
+                    ball.vz = nz * hitForce * 1.5;
+
+                    if (isDefendActive && c === car) {
+                        ballWasHitInDefense = true;
+                    }
+                }
+            });
+
+            // Defend Mode Next Round Trigger
+            if (isDefendActive && !isCountingDown) {
+                if (ballWasHitInDefense || ball.z < -200 || Math.abs(ball.vx) > 0.1) {
+                    if (ballWasHitInDefense) defenseLevel++;
+                    document.getElementById("defendLevel").innerText = defenseLevel;
+                    prepareDefendShot();
+                }
+            }
+
+            // Sync Ball Mesh
+            ball.mesh.position.set(ball.x, ball.y, ball.z);
+            ball.mesh.rotation.x += ball.vz * 0.05;
+            ball.mesh.rotation.z -= ball.vx * 0.05;
+
+            // Camera Tracking System
+            if (ballCamActive) {
+                let camDist = 35;
+                let dx = ball.x - car.x;
+                let dz = ball.z - car.z;
+                let angleToBall = Math.atan2(dx, dz);
+
+                camera.position.x = car.x - Math.sin(angleToBall) * camDist;
+                camera.position.z = car.z - Math.cos(angleToBall) * camDist;
+                camera.position.y = car.y + 16;
+                camera.lookAt(ball.x, ball.y + 2, ball.z);
+            } else {
+                let camDist = 30;
+                camera.position.x = car.x - Math.sin(car.angle) * camDist;
+                camera.position.z = car.z - Math.cos(car.angle) * camDist;
+                camera.position.y = car.y + 14;
+                camera.lookAt(car.x, car.y + 3, car.z + 10 * Math.cos(car.angle));
+            }
+
+            // Camera Shake Effect on Explosions
+            if (shakeIntensity > 0) {
+                camera.position.x += (Math.random() - 0.5) * shakeIntensity;
+                camera.position.y += (Math.random() - 0.5) * shakeIntensity;
+                shakeIntensity *= 0.9;
+                if (shakeIntensity < 0.05) shakeIntensity = 0;
+            }
+
+            updateGoalExplosions();
+        }
+
+        // --- 7. MAIN GAME LOOP ---
+        function animate() {
+            requestAnimationFrame(animate);
+            updatePhysics();
+            renderer.render(scene, camera);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

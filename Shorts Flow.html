@@ -1,0 +1,4170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#050506">
+<title>ShortsFlow</title>
+
+<style>
+:root {
+    --accent: #ff174f;
+    --accent-2: #ff4d75;
+    --glass: rgba(18,18,22,.72);
+    --glass-strong: rgba(24,24,29,.88);
+    --border: rgba(255,255,255,.105);
+    --text-soft: rgba(255,255,255,.64);
+    --text-faint: rgba(255,255,255,.4);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    background: #050506;
+    color: #fff;
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Display",
+        "SF Pro Text",
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+}
+
+body {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+button {
+    font: inherit;
+    border: none;
+    outline: none;
+    background: none;
+}
+
+button,
+iframe,
+a {
+    -webkit-tap-highlight-color: transparent;
+}
+
+.app {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    overflow: hidden;
+    background:
+        radial-gradient(
+            circle at 50% 35%,
+            rgba(90,80,110,.11),
+            transparent 38%
+        ),
+        #050506;
+}
+
+/* =========================================================
+   TOP NAVIGATION
+   ========================================================= */
+
+.topbar {
+    position: fixed;
+    z-index: 200;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: calc(56px + env(safe-area-inset-top));
+    padding:
+        env(safe-area-inset-top)
+        16px
+        0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    pointer-events: none;
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(0,0,0,.85),
+            rgba(0,0,0,.3) 65%,
+            transparent
+        );
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    pointer-events: auto;
+}
+
+.brand-icon {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 11px;
+    background:
+        linear-gradient(
+            145deg,
+            #ff194f,
+            #ff0050 52%,
+            #d90043
+        );
+    box-shadow:
+        0 8px 30px rgba(255,0,72,.3),
+        0 0 0 1px rgba(255,255,255,.13) inset;
+    font-size: 15px;
+    font-weight: 900;
+}
+
+.brand-text {
+    font-size: 19px;
+    line-height: 1;
+    letter-spacing: -.7px;
+    font-weight: 850;
+}
+
+.brand-text span {
+    color: rgba(255,255,255,.48);
+    font-weight: 650;
+}
+
+.top-actions {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    pointer-events: auto;
+}
+
+.header-pill {
+    height: 36px;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: rgba(18,18,22,.58);
+    backdrop-filter: blur(22px) saturate(140%);
+    -webkit-backdrop-filter: blur(22px) saturate(140%);
+    color: rgba(255,255,255,.75);
+    font-size: 11px;
+    font-weight: 700;
+}
+
+.header-pill .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #35dc75;
+    box-shadow: 0 0 12px rgba(53,220,117,.7);
+}
+
+.icon-button {
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,.11);
+    border-radius: 50%;
+    background:
+        linear-gradient(
+            145deg,
+            rgba(38,38,43,.82),
+            rgba(16,16,19,.76)
+        );
+    backdrop-filter: blur(22px);
+    -webkit-backdrop-filter: blur(22px);
+    color: white;
+    cursor: pointer;
+    font-size: 16px;
+    box-shadow: 0 8px 30px rgba(0,0,0,.25);
+    transition: transform .15s ease;
+    touch-action: manipulation;
+}
+
+.icon-button:active {
+    transform: scale(.92);
+}
+
+/* =========================================================
+   FEED
+   ========================================================= */
+
+.feed {
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    overflow-y: scroll;
+    overflow-x: hidden;
+    scroll-snap-type: y mandatory;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    will-change: scroll-position;
+}
+
+.feed::-webkit-scrollbar {
+    display: none;
+}
+
+.short {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    isolation: isolate;
+    background: #050506;
+}
+
+/* =========================================================
+   VIDEO SHELL
+   ========================================================= */
+
+.video-shell {
+    position: relative;
+    z-index: 2;
+    width: min(440px, 100vw);
+    height: min(92vh, 790px);
+    aspect-ratio: 9 / 16;
+    overflow: hidden;
+    border-radius: 20px;
+    background: #101012;
+    box-shadow: 0 40px 120px rgba(0,0,0,.6);
+    touch-action: manipulation;
+}
+
+.video-touch-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    background: transparent;
+    cursor: pointer;
+}
+
+.play-state-pop {
+    position: absolute;
+    z-index: 15;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.6);
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    background: rgba(0,0,0,.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: grid;
+    place-items: center;
+    color: #fff;
+    font-size: 28px;
+    pointer-events: none;
+    opacity: 0;
+    animation: popPlayState .5s ease forwards;
+}
+
+@keyframes popPlayState {
+    0% {
+        opacity: 0;
+        transform: translate(-50%,-50%) scale(.6);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%,-50%) scale(1.1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%,-50%) scale(1);
+    }
+}
+
+.heart-pop {
+    position: absolute;
+    z-index: 15;
+    pointer-events: none;
+    transform: translate(-50%,-50%) scale(0);
+    font-size: 80px;
+    color: #ff2a5f;
+    text-shadow: 0 10px 30px rgba(0,0,0,.5);
+    animation: popHeart .8s cubic-bezier(.17,.89,.32,1.28) forwards;
+}
+
+@keyframes popHeart {
+    0% {
+        opacity: 0;
+        transform: translate(-50%,-50%) scale(.2) rotate(-15deg);
+    }
+    40% {
+        opacity: 1;
+        transform: translate(-50%,-50%) scale(1.2) rotate(0);
+    }
+    70% {
+        opacity: 1;
+        transform: translate(-50%,-50%) scale(1) rotate(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%,-100%) scale(1.3) rotate(10deg);
+    }
+}
+
+.video-shell iframe {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    pointer-events: none;
+}
+
+.video-loading {
+    position: absolute;
+    z-index: 6;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: radial-gradient(circle,rgba(30,30,35,.95),rgba(8,8,10,.98));
+    pointer-events: none;
+    transition: opacity .35s ease,visibility .35s ease;
+}
+
+.video-shell.loaded .video-loading {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,.12);
+    border-top-color: white;
+    animation: spin .8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* =========================================================
+   ACTIONS
+   ========================================================= */
+
+.actions {
+    position: absolute;
+    z-index: 20;
+    right: max(12px,calc((100vw - 440px) / 2 + 12px));
+    bottom: calc(28px + env(safe-area-inset-bottom));
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+}
+
+.action {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.action-button {
+    position: relative;
+    width: 48px;
+    height: 48px;
+    display: grid;
+    place-items: center;
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 50%;
+    color: white;
+    background: rgba(22,22,26,.65);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    cursor: pointer;
+    font-size: 20px;
+    touch-action: manipulation;
+    transition:
+        transform .15s ease,
+        background .2s ease,
+        color .2s ease;
+}
+
+.action-button:active {
+    transform: scale(.88);
+}
+
+.action-button.liked {
+    color: #ff315f;
+    background: rgba(255,49,95,.18);
+    border-color: rgba(255,49,95,.4);
+}
+
+.action-label {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: rgba(255,255,255,.85);
+    text-shadow: 0 2px 8px rgba(0,0,0,.8);
+}
+
+/* =========================================================
+   INFO
+   ========================================================= */
+
+.info {
+    position: absolute;
+    z-index: 20;
+    left: max(16px,calc((100vw - 440px) / 2 + 16px));
+    right: 75px;
+    bottom: calc(24px + env(safe-area-inset-bottom));
+    text-shadow: 0 2px 10px rgba(0,0,0,.9);
+    pointer-events: none;
+}
+
+.creator-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.creator-avatar {
+    width: 32px;
+    height: 32px;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: #25252b;
+    border: 1px solid rgba(255,255,255,.2);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.creator {
+    font-size: 14px;
+    font-weight: 750;
+}
+
+.follow-pill {
+    padding: 3px 7px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.15);
+    color: rgba(255,255,255,.9);
+    font-size: 9px;
+    font-weight: 700;
+}
+
+.description {
+    font-size: 13.5px;
+    line-height: 1.35;
+    color: rgba(255,255,255,.92);
+    margin-bottom: 8px;
+    font-weight: 500;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.info-bottom {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.category {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 9px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.12);
+    color: rgba(255,255,255,.8);
+    font-size: 9.5px;
+    font-weight: 700;
+}
+
+.video-number {
+    color: rgba(255,255,255,.45);
+    font-size: 9.5px;
+    font-weight: 600;
+}
+
+/* =========================================================
+   SMART FEED
+   ========================================================= */
+
+.smart-indicator {
+    position: fixed;
+    z-index: 180;
+    top: calc(60px + env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%);
+    height: 28px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,.08);
+    background: rgba(18,18,22,.62);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    color: rgba(255,255,255,.55);
+    font-size: 9.5px;
+    font-weight: 700;
+    pointer-events: none;
+    transition: opacity .3s ease,transform .3s ease;
+}
+
+.smart-indicator::before {
+    content: "";
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #7c5cff;
+}
+
+.smart-indicator.hidden {
+    opacity: 0;
+    transform: translate(-50%,-7px);
+}
+
+.smart-indicator.learning::after {
+    content: " • learning";
+    color: rgba(255,255,255,.32);
+}
+
+.progress-track {
+    position: fixed;
+    z-index: 190;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 120px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.1);
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 0;
+    border-radius: inherit;
+    background: rgba(255,255,255,.75);
+    transition: height .2s ease-out;
+}
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+
+.settings-overlay {
+    position: fixed;
+    z-index: 1000;
+    inset: 0;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(0,0,0,.7);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+.settings-overlay.open {
+    display: flex;
+}
+
+.settings-panel {
+    position: relative;
+    width: min(450px,100%);
+    max-height: min(650px,85vh);
+    overflow: auto;
+    padding: 20px;
+    border-radius: 24px;
+    background: #141418;
+    border: 1px solid rgba(255,255,255,.1);
+    box-shadow:
+        0 35px 100px rgba(0,0,0,.55),
+        0 0 0 1px rgba(255,255,255,.035) inset;
+    animation: panelIn .38s cubic-bezier(.16,1,.3,1);
+}
+
+@keyframes panelIn {
+    from {
+        opacity: 0;
+        transform: translateY(16px) scale(.96);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.settings-title {
+    font-size: 20px;
+    font-weight: 800;
+}
+
+.close-button {
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255,255,255,.1);
+    color: white;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.setting-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 10px;
+    border-bottom: 1px solid rgba(255,255,255,.06);
+    border-radius: 14px;
+    transition: background .2s ease;
+}
+
+.setting-row:hover {
+    background: rgba(255,255,255,.035);
+}
+
+.setting-name {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.setting-description {
+    color: rgba(255,255,255,.45);
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+.toggle {
+    width: 48px;
+    height: 28px;
+    padding: 2px;
+    border: 0;
+    border-radius: 999px;
+    background: #37373c;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background .2s ease;
+}
+
+.toggle::after {
+    content: "";
+    display: block;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: white;
+    transition: transform .2s ease;
+}
+
+.toggle.active {
+    background: #20c96b;
+}
+
+.toggle.active::after {
+    transform: translateX(20px);
+}
+
+.reset-button {
+    width: 100%;
+    height: 48px;
+    margin-top: 16px;
+    border: 1px solid rgba(255,255,255,.1);
+    border-radius: 12px;
+    background: rgba(255,255,255,.06);
+    color: white;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    touch-action: manipulation;
+    transition:
+        background .25s ease,
+        border-color .25s ease,
+        transform .2s ease;
+}
+
+.reset-button:hover {
+    background: rgba(255,255,255,.1);
+    border-color: rgba(255,255,255,.18);
+}
+
+.reset-button:active {
+    transform: scale(.98);
+}
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+.toast {
+    position: fixed;
+    z-index: 1500;
+    left: 50%;
+    bottom: calc(30px + env(safe-area-inset-bottom));
+    transform: translate(-50%,15px) scale(.95);
+    opacity: 0;
+    padding: 10px 18px;
+    border-radius: 999px;
+    background: rgba(28,28,34,.92);
+    border: 1px solid rgba(255,255,255,.1);
+    color: white;
+    font-size: 11px;
+    font-weight: 600;
+    pointer-events: none;
+    transition:
+        opacity .25s ease,
+        transform .25s ease;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translate(-50%,0) scale(1);
+}
+
+/* =========================================================
+   SEEN BADGE
+   ========================================================= */
+
+.seen-badge {
+    position: absolute;
+    z-index: 22;
+    top: calc(68px + env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 7px 11px;
+    border-radius: 999px;
+    background: rgba(25,25,30,.72);
+    border: 1px solid rgba(255,255,255,.09);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+    color: rgba(255,255,255,.62);
+    font-size: 9px;
+    font-weight: 750;
+    letter-spacing: .2px;
+    opacity: 0;
+    transition: opacity .25s ease;
+    pointer-events: none;
+    box-shadow: 0 8px 28px rgba(0,0,0,.25);
+}
+
+.short.seen .seen-badge {
+    opacity: 1;
+}
+
+/* =========================================================
+   SHORTSFLOW 2.0
+   ========================================================= */
+
+:root {
+    --ui-ease: cubic-bezier(.22,1,.36,1);
+    --ui-spring: cubic-bezier(.16,1,.3,1);
+}
+
+.app::before {
+    content: "";
+    position: fixed;
+    inset: -20%;
+    z-index: 0;
+    pointer-events: none;
+    background:
+        radial-gradient(circle at 15% 15%,rgba(255,23,79,.12),transparent 25%),
+        radial-gradient(circle at 85% 70%,rgba(91,75,255,.10),transparent 28%),
+        radial-gradient(circle at 50% 50%,rgba(255,255,255,.025),transparent 38%);
+    filter: blur(30px);
+    animation: ambientDrift 18s ease-in-out infinite alternate;
+}
+
+@keyframes ambientDrift {
+    from {
+        transform: translate3d(-1%,-1%,0) scale(1);
+    }
+    to {
+        transform: translate3d(1.5%,1%,0) scale(1.04);
+    }
+}
+
+.topbar,
+.smart-indicator,
+.progress-track {
+    will-change: transform,opacity;
+}
+
+.brand-icon {
+    transition:
+        transform .35s var(--ui-spring),
+        box-shadow .35s ease;
+}
+
+.brand:hover .brand-icon {
+    transform: translateY(-1px) rotate(-3deg) scale(1.04);
+}
+
+.icon-button,
+.action-button,
+.close-button,
+.toggle,
+.reset-button {
+    transition:
+        transform .22s var(--ui-spring),
+        background .25s ease,
+        border-color .25s ease,
+        box-shadow .25s ease;
+}
+
+.icon-button:hover,
+.action-button:hover {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 12px 32px rgba(0,0,0,.28);
+}
+
+.action-button:hover {
+    background: rgba(38,38,45,.82);
+    border-color: rgba(255,255,255,.2);
+}
+
+.short {
+    contain: layout paint style;
+}
+
+.short::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    pointer-events: none;
+    background:
+        linear-gradient(
+            to bottom,
+            rgba(0,0,0,.05),
+            transparent 28%,
+            transparent 60%,
+            rgba(0,0,0,.58)
+        );
+    opacity: .82;
+    transition: opacity .5s ease;
+}
+
+.short:not(.active)::after {
+    opacity: .65;
+}
+
+.video-shell {
+    transform: translateZ(0);
+    transition:
+        transform .55s var(--ui-spring),
+        box-shadow .55s ease,
+        filter .55s ease;
+}
+
+.short.active .video-shell {
+    transform: scale(1.002);
+    box-shadow:
+        0 45px 130px rgba(0,0,0,.7),
+        0 0 0 1px rgba(255,255,255,.055) inset;
+}
+
+.short:not(.active) .video-shell {
+    filter: saturate(.94) brightness(.92);
+}
+
+.info,
+.actions {
+    transition:
+        transform .5s var(--ui-spring),
+        opacity .4s ease;
+}
+
+.short:not(.active) .info {
+    transform: translateY(7px);
+    opacity: .72;
+}
+
+.short:not(.active) .actions {
+    transform: translateY(6px);
+    opacity: .72;
+}
+
+.smart-indicator {
+    box-shadow:
+        0 8px 35px rgba(0,0,0,.22),
+        0 0 28px rgba(124,92,255,.08);
+}
+
+.feed {
+    scroll-behavior: auto;
+}
+
+@media (max-width:600px) {
+    .video-shell {
+        width: 100vw;
+        height: 100dvh;
+        max-height: none;
+        border-radius: 0;
+        box-shadow: none;
+    }
+
+    .header-pill {
+        display: none;
+    }
+
+    .actions {
+        right: 12px;
+        bottom: calc(24px + env(safe-area-inset-bottom));
+    }
+
+    .info {
+        left: 14px;
+        right: 72px;
+        bottom: calc(24px + env(safe-area-inset-bottom));
+    }
+}
+
+@media (prefers-reduced-motion:reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: .001ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .001ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    .app::before {
+        display: none;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-icon">▶</div>
+            <div class="brand-text">Shorts<span>Flow</span></div>
+        </div>
+
+        <div class="top-actions">
+            <div class="header-pill" id="feedStatus">
+                <span class="status-dot"></span>
+                <span id="feedStatusText">Smart Feed</span>
+            </div>
+
+            <button
+                class="icon-button"
+                id="settingsButton"
+                aria-label="Open settings">
+                ⚙
+            </button>
+        </div>
+    </header>
+
+    <div class="smart-indicator" id="smartIndicator">
+        Smart Feed
+    </div>
+
+    <main
+        class="feed"
+        id="feed"
+        aria-label="Shorts feed">
+    </main>
+
+    <div class="progress-track">
+        <div
+            class="progress-bar"
+            id="progressBar">
+        </div>
+    </div>
+
+</div>
+
+<div class="settings-overlay" id="settingsOverlay">
+    <div class="settings-panel">
+
+        <div class="settings-header">
+            <div class="settings-title">Settings</div>
+
+            <button
+                class="close-button"
+                id="closeSettings">
+                ✕
+            </button>
+        </div>
+
+        <div class="setting-row">
+            <div>
+                <div class="setting-name">Autoplay</div>
+                <div class="setting-description">
+                    Start video on scroll
+                </div>
+            </div>
+
+            <button
+                class="toggle"
+                id="autoplayToggle">
+            </button>
+        </div>
+
+        <div class="setting-row">
+            <div>
+                <div class="setting-name">Start muted</div>
+                <div class="setting-description">
+                    Start with video muted
+                </div>
+            </div>
+
+            <button
+                class="toggle"
+                id="muteToggle">
+            </button>
+        </div>
+
+        <div class="setting-row">
+            <div>
+                <div class="setting-name">Smart Feed</div>
+                <div class="setting-description">
+                    Learn preferences automatically
+                </div>
+            </div>
+
+            <button
+                class="toggle"
+                id="smartFeedToggle">
+            </button>
+        </div>
+
+        <div class="setting-row">
+            <div>
+                <div class="setting-name">
+                    Personalization Engine
+                </div>
+
+                <div class="setting-description">
+                    Learns from watch time, skips, creators,
+                    topics and title patterns
+                </div>
+            </div>
+
+            <div
+                style="
+                    font-size:10px;
+                    color:rgba(255,255,255,.45);
+                    font-weight:700
+                ">
+                AI-LIKE
+            </div>
+        </div>
+
+        <button
+            class="reset-button"
+            id="resetButton">
+            Reset Feed Preferences
+        </button>
+
+    </div>
+</div>
+
+<div
+    class="toast"
+    id="toast"
+    role="status">
+</div>
+
+<script>
+
+const VIDEOS = [
+
+    /* =====================================================
+       ORIGINAL FEED
+       ===================================================== */
+
+    {
+        id: "f7p1Ec4J8-4",
+        title: "That one friend who NEVER has your back...",
+        creator: "Nathan Doan Comedy",
+        category: "Comedy"
+    },
+
+    {
+        id: "WmVxEy7_RnM",
+        title: "When you hate on bro for no reason✨",
+        creator: "Nathan Doan Comedy",
+        category: "Comedy"
+    },
+
+    {
+        id: "fT0oo6lcmGU",
+        title: "When the Restaurant is TOO expensive… 🥲",
+        creator: "Nathan Doan Comedy",
+        category: "Comedy"
+    },
+
+    {
+        id: "dXnjjafO1AM",
+        title: "what the heck",
+        creator: "DrDonut",
+        category: "Minecraft"
+    },
+
+    {
+        id: "EShiKTGquTQ",
+        title: "DrDonut couldn't believe it 😭🙏🏼🤣",
+        creator: "DrDonut",
+        category: "Minecraft"
+    },
+
+    {
+        id: "ZxTU43S9W-Q",
+        title: "A pal's day in palworld",
+        creator: "Shorts",
+        category: "Gaming"
+    },
+
+    {
+        id: "lVgjUWFSR6w",
+        title: "Minecraft Nostalgia",
+        creator: "GEVids",
+        category: "Minecraft"
+    },
+
+    {
+        id: "z90RcaZVM6g",
+        title: "22 Life Hacks I Wish I Knew Sooner!",
+        creator: "Life Hacks",
+        category: "Life Hacks"
+    },
+
+    {
+        id: "7HMftA6q_9E",
+        title: "Cutting Open Food Fidgets ASMR!",
+        creator: "Shorts",
+        category: "Satisfying"
+    },
+
+    {
+        id: "imx8h7IfHwY",
+        title: "Hilarious, Awkward Interactions",
+        creator: "Nick Fleetwood",
+        category: "Comedy"
+    },
+
+
+    /* =====================================================
+       DRDONUT SHORTS
+       ===================================================== */
+
+    {
+        id: "FAHRMReEw-8",
+        title: "Donut takes on Minecraft Challenges...",
+        creator: "DrDonut",
+        category: "Minecraft"
+    },
+
+    {
+        id: "T9bYd8glATw",
+        title: "I Trapped DrDonut With Satisfaction",
+        creator: "DrDonut",
+        category: "Minecraft"
+    },
+
+    {
+        id: "7edHzY-us5g",
+        title: "DrDonut wants me to KILL HIM!",
+        creator: "DrDonut",
+        category: "Minecraft"
+    },
+
+    {
+        id: "kotJK_pCIDI",
+        title: "Dr.Donut 1v50..........",
+        creator: "DrDonut",
+        category: "Minecraft"
+    },
+
+    {
+        id: "s0QBc_VrOGA",
+        title: "DrDonut vs Team Compramos Chaos",
+        creator: "DrDonut",
+        category: "Minecraft"
+    },
+
+    {
+        id: "W5yXmErq_-s",
+        title: "Blowing up fan bases compilation",
+        creator: "DrDonut",
+        category: "Minecraft"
+    },
+
+    {
+        id: "4uIWJcbcUYw",
+        title: "The Final Dr Donut Trap",
+        creator: "DrDonut",
+        category: "Minecraft"
+    },
+
+    {
+        id: "pYds7K0au0A",
+        title: "Donut SMP Border Expansion War",
+        creator: "DrDonut",
+        category: "Minecraft"
+    },
+
+
+    /* =====================================================
+       MINECRAFT GAMEPLAY
+       ===================================================== */
+
+    {
+        id: "OQzbTe35XQs",
+        title: "Minecraft, But You Have To Build To Craft…",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "1_ThBtdULKc",
+        title: "Minecraft, But You're the Strongest…",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "-8ijJ0v6MGg",
+        title: "Minecraft, But Liking Makes You Jump Higher!",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "zL-9Q4s06h8",
+        title: "i should NOT have waited",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "2hON0Usxy1U",
+        title: "Minecraft Take It Or Leave It...",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "R8Ndz5TyyIY",
+        title: "I CANT SEE ANYTHING",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "Q3qO7CpNtbw",
+        title: "LIKE = REALISTIC!",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "OITV3MBFVFU",
+        title: "every time i fall makes me MONEY",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "RTSTTTsEBlI",
+        title: "I found my old Minecraft world...",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "V9MOb7wR30M",
+        title: "Hiding as LAVA to Prank My Friend!",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "xK56Nm0IdfM",
+        title: "XP NEGATIVA de #minecraft",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+
+    /* =====================================================
+       BUILDING TIPS & HACKS
+       ===================================================== */
+
+    {
+        id: "rw7mZgJpT_A",
+        title: "did you know you can LOCK maps in minecraft???",
+        creator: "Building Hacks",
+        category: "Building Hacks"
+    },
+
+    {
+        id: "WFIBFpO8d68",
+        title: "3 Simple Build HACKS!!!",
+        creator: "Building Hacks",
+        category: "Building Hacks"
+    },
+
+    {
+        id: "MG5BzYaxhfw",
+        title: "Minecraft Builds Hacks",
+        creator: "Building Hacks",
+        category: "Building Hacks"
+    },
+
+    {
+        id: "Ip-BSFQ6R6g",
+        title: "The Best Building Tricks in Minecraft",
+        creator: "Building Hacks",
+        category: "Building Hacks"
+    },
+
+    {
+        id: "cqM0fRSzqjo",
+        title: "Minecraft Build Hacks 😯 blow your mind 🤯",
+        creator: "Building Hacks",
+        category: "Building Hacks"
+    },
+
+    {
+        id: "A_xlO0TfJl8",
+        title: "Minecraft Build Hacks ☠️ (Crazy Tricks You Didn't ...)",
+        creator: "Building Hacks",
+        category: "Building Hacks"
+    },
+
+    {
+        id: "4Jxc5DFSVJA",
+        title: "Minecraft Top Build Hacks",
+        creator: "Building Hacks",
+        category: "Building Hacks"
+    },
+
+    {
+        id: "CHBYFiG05Bs",
+        title: "Minecraft Build Hack",
+        creator: "Building Hacks",
+        category: "Building Hacks"
+    },
+
+    {
+        id: "uIrLkHu7B24",
+        title: "Minecraft Build Hack",
+        creator: "Building Hacks",
+        category: "Building Hacks"
+    },
+
+    {
+        id: "nayuJc3EhcI",
+        title: "Minecraft Builds Hacks",
+        creator: "Building Hacks",
+        category: "Building Hacks"
+    },
+
+
+    /* =====================================================
+       SPEEDRUNNING & GAME GUIDES
+       ===================================================== */
+
+    {
+        id: "IzS9eUe8IG0",
+        title: "I Fit A Whole Minecraft Speedrun Into A YouTube Short",
+        creator: "Speedrunning",
+        category: "Speedrunning"
+    },
+
+    {
+        id: "RUqrU0igZOA",
+        title: "Minecraft: Speedrun Nether Portal Tutorial",
+        creator: "Speedrunning",
+        category: "Speedrunning"
+    },
+
+    {
+        id: "NjqGInYjlbQ",
+        title: "How to Speedrun Minecraft in under a minute ...",
+        creator: "Speedrunning",
+        category: "Speedrunning"
+    },
+
+    {
+        id: "i56BWAsP6ao",
+        title: "Minecraft Speedrun STARTER GUIDE",
+        creator: "Speedrunning",
+        category: "Speedrunning"
+    },
+
+    {
+        id: "ZjV0AQdl0SQ",
+        title: "Learning How to Speedrun Minecraft in 30 Days!",
+        creator: "Speedrunning",
+        category: "Speedrunning"
+    },
+
+    {
+        id: "xIjj4QkT3kE",
+        title: "This Minecraft Speedrun Trick Will BREAK Your Times",
+        creator: "Speedrunning",
+        category: "Speedrunning"
+    },
+
+    {
+        id: "99MFciJb2Wc",
+        title: "How to Speedrun Minecraft?",
+        creator: "Speedrunning",
+        category: "Speedrunning"
+    },
+
+
+    /* =====================================================
+       TRICK SHOTS & CHALLENGES
+       ===================================================== */
+
+    {
+        id: "n_RmsbO_bW4",
+        title: "BEST Duo Trick Shots",
+        creator: "ColinAmazing",
+        category: "Trick Shots"
+    },
+
+    {
+        id: "cOO3KQ5V28w",
+        title: "Worlds Craziest Trickshots!",
+        creator: "Trick Shots",
+        category: "Trick Shots"
+    },
+
+    {
+        id: "1GQenkjtq38",
+        title: "Amazing TRICK SHOTS! 👀",
+        creator: "Trick Shots",
+        category: "Trick Shots"
+    },
+
+    {
+        id: "mInSaM9tQjQ",
+        title: "Our Most Viral Trickshots",
+        creator: "Trick Shots",
+        category: "Trick Shots"
+    },
+
+    {
+        id: "4OsqGjtBEIY",
+        title: "Craziest Trickshots of all time..",
+        creator: "Trick Shots",
+        category: "Trick Shots"
+    },
+
+    {
+        id: "TgPjRSCwnyI",
+        title: "7 Trick Shots from EASY to IMPOSSIBLE",
+        creator: "Trick Shots",
+        category: "Trick Shots"
+    },
+
+    {
+        id: "WpXwY7-L9yE",
+        title: "Our Most Intense Balloon Popping Race",
+        creator: "How Ridiculous",
+        category: "Challenges"
+    },
+
+    {
+        id: "gP996e-WkCw",
+        title: "Power Tools Racing is Intense",
+        creator: "How Ridiculous",
+        category: "Challenges"
+    },
+
+    {
+        id: "CWwPZbzzks8",
+        title: "Most Unlikely Trick Shots",
+        creator: "Trick Shots",
+        category: "Trick Shots"
+    },
+
+    {
+        id: "0iZ70zLPfLc",
+        title: "15 Years of Trickshots…",
+        creator: "Trick Shots",
+        category: "Trick Shots"
+    },
+
+    {
+        id: "R4O3q6X_kGk",
+        title: "The Ping Pong Ball Glass Trick",
+        creator: "Shorts",
+        category: "Trick Shots"
+    },
+
+    {
+        id: "B3qX8zLWkzo",
+        title: "Can it cross the line?",
+        creator: "Shorts",
+        category: "Challenges"
+    },
+
+    {
+        id: "T2h20yPuv3Q",
+        title: "Jumping Over 100 Cups!",
+        creator: "Shorts",
+        category: "Challenges"
+    },
+
+    {
+        id: "v_RmsbO_bW4",
+        title: "Best trick shot ever #challenge",
+        creator: "Trick Shots",
+        category: "Challenges"
+    },
+
+    {
+        id: "f0WfdLd48Tc",
+        title: "ClownPierce Bait Trap",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+
+    /* =====================================================
+       REPLACEMENT MINECRAFT VIDEOS
+       ===================================================== */
+
+    {
+        id: "x_gI7-mO470",
+        title: "Epic Base Discovery",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "YwWf_88U9YQ",
+        title: "Minecraft Trapped Again Challenge",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "V_q29Z9H2Yc",
+        title: "Minecraft Redstone Vault",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "bM_vH0X9M8w",
+        title: "Bedrock Breaking Glitch",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "Z_p9z8w7V2E",
+        title: "Pro Clutch Moments",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "A_q1w2e3r4t",
+        title: "Netherite Speedrun Short",
+        creator: "Minecraft",
+        category: "Speedrunning"
+    },
+
+    {
+        id: "N_xZxFzai2y",
+        title: "Secret Base Entrance",
+        creator: "Minecraft",
+        category: "Building Hacks"
+    },
+
+    {
+        id: "t7W9Y5q8X2M",
+        title: "Invisible Block Trick",
+        creator: "Minecraft",
+        category: "Building Hacks"
+    },
+
+    {
+        id: "yodlVENPsXI",
+        title: "Funny Minecraft Shorts Compilation",
+        creator: "Minecraft",
+        category: "Comedy"
+    },
+
+    {
+        id: "K_m9P4qRtY7",
+        title: "Custom Weapon Mod Showcase",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "w7e3r4t5y6u",
+        title: "Warden Escape Challenge",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "J_q8w9e0r1t",
+        title: "Villager Trading Loop Hole",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "L_p2o3i4u5y",
+        title: "Creeper Explosion Survival",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "M_t5r4e3w2q",
+        title: "Diamond Vein Hunter Short",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "P_o9i8u7y6t",
+        title: "Hardcore World Fails",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "Q_w1e2r3t4y",
+        title: "Elytra Racing Tournament",
+        creator: "Minecraft",
+        category: "Challenges"
+    },
+
+    {
+        id: "R_t5y6u7i8o",
+        title: "Bedrock Dragon One-Shot",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "S_p0o9i8u7y",
+        title: "Stealing Diamonds Prank",
+        creator: "Minecraft",
+        category: "Comedy"
+    },
+
+    {
+        id: "T_q1w2e3r4t",
+        title: "Minecraft MythBusters Episode",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "U_t5r4e3w2q",
+        title: "Mob Breeding Guide",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "V_o9i8u7y6t",
+        title: "Survival Life Hack 01",
+        creator: "Minecraft",
+        category: "Life Hacks"
+    },
+
+    {
+        id: "W_w1e2r3t4y",
+        title: "Survival Life Hack 02",
+        creator: "Minecraft",
+        category: "Life Hacks"
+    },
+
+    {
+        id: "X_t5y6u7i8o",
+        title: "Redstone Puzzle Map",
+        creator: "Minecraft",
+        category: "Building Hacks"
+    },
+
+    {
+        id: "Y_p0o9i8u7y",
+        title: "Impossible Redstone Trap",
+        creator: "Minecraft",
+        category: "Building Hacks"
+    },
+
+    {
+        id: "Z_q1w2e3r4t",
+        title: "Starter Base Tutorial",
+        creator: "Minecraft",
+        category: "Building Hacks"
+    },
+
+    {
+        id: "A_t5r4e3w2q",
+        title: "All Achievements Speedrun",
+        creator: "Minecraft",
+        category: "Speedrunning"
+    },
+
+    {
+        id: "B_o9i8u7y6t",
+        title: "Tiny Minecraft World Mod",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "C_w1e2r3t4y",
+        title: "Rollercoaster Cart Ride World",
+        creator: "Minecraft",
+        category: "Gaming"
+    },
+
+    {
+        id: "D_t5y6u7i8o",
+        title: "Minecraft Drama/Parody Short",
+        creator: "Minecraft",
+        category: "Comedy"
+    },
+
+
+    /* =====================================================
+       COMEDY & VIRAL
+       ===================================================== */
+
+    {
+        id: "D7vR5yxPQJU",
+        title: "If Cleaning Was a Time Sport (Part 2)",
+        creator: "Daniel LaBelle",
+        category: "Comedy"
+    },
+
+    {
+        id: "AK7uwdd6YnY",
+        title: "If Cleaning Was a Timed Sport (Original)",
+        creator: "Daniel LaBelle",
+        category: "Comedy"
+    },
+
+    {
+        id: "H8S9X9y0w4w",
+        title: "Would you fly to Paris for a baguette?",
+        creator: "MrBeast",
+        category: "Comedy"
+    },
+
+    {
+        id: "xX7eY9kR2b8",
+        title: "Giving iPhones instead of candy on Halloween",
+        creator: "MrBeast",
+        category: "Viral"
+    },
+
+    {
+        id: "EYy5SZzlxyU",
+        title: "How to open doors on a $100M Ferrari",
+        creator: "MrBeast",
+        category: "Viral"
+    },
+
+    {
+        id: "c2M9vRXzqjo",
+        title: "When your friend takes things too literally",
+        creator: "Shorts",
+        category: "Comedy"
+    },
+
+    {
+        id: "v6e4zlHG3SE",
+        title: "Teacher Comedy & School POV Moments",
+        creator: "Comedy",
+        category: "Comedy"
+    },
+
+    {
+        id: "gPOuQ2j-ahg",
+        title: "15 Minutes of Hilarious POVs",
+        creator: "Comedy",
+        category: "Comedy"
+    },
+
+    {
+        id: "9wX9fR7z_mY",
+        title: "Real Life Transforming Cinderella Dress",
+        creator: "Shorts",
+        category: "Entertainment"
+    },
+
+    {
+        id: "WsbQEAA3a1Q",
+        title: "When the AI takes over your car",
+        creator: "Shorts",
+        category: "Comedy"
+    },
+
+    {
+        id: "eoEZGPKM44k",
+        title: "The Satisfying Rust Laser Cleaner",
+        creator: "Shorts",
+        category: "Satisfying"
+    },
+
+    {
+        id: "b9X7_yK2mRA",
+        title: "Little Officer on Duty!",
+        creator: "AVON NOVA",
+        category: "Viral"
+    },
+
+
+    /* =====================================================
+       SATISFYING & ASMR
+       ===================================================== */
+
+    {
+        id: "fr3YY35f4vc",
+        title: "Laser Rust Removal 🔥",
+        creator: "Shorts",
+        category: "Satisfying"
+    },
+
+    {
+        id: "bziLJV2pJQA",
+        title: "This Pulsed Laser Will Blow Your Mind - Rust Gone!",
+        creator: "Shorts",
+        category: "Satisfying"
+    },
+
+    {
+        id: "r9SMLAkY5Ws",
+        title: "Laser cleaning is absolutely amazing!",
+        creator: "Shorts",
+        category: "Satisfying"
+    },
+
+    {
+        id: "44kzO9g5YG0",
+        title: "Ultimate Dangerous Crush Compilation: 300 Ton Press Mayhem!",
+        creator: "Hydraulic Press",
+        category: "Satisfying"
+    },
+
+
+    /* =====================================================
+       ILLUSIONS
+       ===================================================== */
+
+    {
+        id: "rvihNMotXuM",
+        title: "Zach King's BEST Illusion of All Time",
+        creator: "Zach King",
+        category: "Illusions"
+    },
+
+    {
+        id: "8aFOHDIV9zY",
+        title: "ILLUSIONS THAT FOOLED THE INTERNET!",
+        creator: "Zach King",
+        category: "Illusions"
+    },
+
+
+    /* =====================================================
+       BASKETBALL
+       ===================================================== */
+
+    {
+        id: "4iq-I80p6us",
+        title: "They're evolving 😲",
+        creator: "Basketball",
+        category: "Basketball"
+    },
+
+    {
+        id: "sqVWAEgSB3g",
+        title: "Most Relatable Basketball Shorts 😂",
+        creator: "Basketball",
+        category: "Basketball"
+    },
+
+    {
+        id: "tqrGftamiuU",
+        title: "When a Hooper Goes Bowling 🎳",
+        creator: "Basketball",
+        category: "Basketball"
+    },
+
+    {
+        id: "ug6MOT0sm4o",
+        title: "My Next Gen Build Routine",
+        creator: "Basketball",
+        category: "Basketball"
+    },
+
+    {
+        id: "ZGZ9iiszJnY",
+        title: "The Kid Who Never Misses A Shot",
+        creator: "Basketball",
+        category: "Basketball"
+    },
+
+    {
+        id: "G_8W2C5eUu4",
+        title: "NBA Legends Craziest Trickshots",
+        creator: "Basketball",
+        category: "Basketball"
+    },
+
+    {
+        id: "PmrsaB1qvrM",
+        title: "Recreating the 110M View Lethal Shooter Short",
+        creator: "Basketball",
+        category: "Basketball"
+    },
+
+
+    /* =====================================================
+       NEW MINECRAFT / DRDONUT VIDEOS
+       ===================================================== */
+
+    {
+        id: "cDcWvy4fi_Y",
+        title: "what's the most viewed Minecraft video?",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "NHaW3r3CAAg",
+        title: "Minecraft Rhymes 6",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "XBxbVhfgsN0",
+        title: "DRDONUT DOES A TnT TRUST TEST",
+        creator: "DrDonut",
+        category: "Minecraft"
+    },
+
+    {
+        id: "5a88r49E-_g",
+        title: "who is this guy",
+        creator: "DrDonut",
+        category: "Minecraft"
+    },
+
+    {
+        id: "LYeML1prWLM",
+        title: "Funniest Minecraft Moments 🤣",
+        creator: "DrDonut",
+        category: "Minecraft"
+    },
+
+    {
+        id: "YucludkRdtM",
+        title: "your not safe over there",
+        creator: "DrDonut",
+        category: "Minecraft"
+    },
+
+    {
+        id: "I9Tz_xvT6lA",
+        title: "The World Record MLM Water Clutch Trick",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "HhvCr8NzDKI",
+        title: "This Minecraft feature makes no sense...",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "glNnovQeXWA",
+        title: "Minecraft, But You Can't Cross this CIRCLE!",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "SncUwf6lf2g",
+        title: "Minecraft Items Only OG Players Remember",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "GDJGM95PKt0",
+        title: "What happens if you feed a parrot cookies?",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "UFxFMOVfusU",
+        title: "Minecraft's Hidden Herobrine Glitch",
+        creator: "Minecraft",
+        category: "Minecraft"
+    },
+
+    {
+        id: "pvTbtIHUz7s",
+        title: "Every Minecraft Item block ever...",
+        creator: "Minecraft",
+        category: "Minecraft"
+    }
+
+];
+
+
+/* =========================================================
+   STORAGE
+   ========================================================= */
+
+const SETTINGS_KEY = "shortsflow_settings_v5";
+const SMART_KEY = "shortsflow_smart_v5";
+const LIKES_KEY = "shortsflow_likes_v5";
+const HISTORY_KEY = "shortsflow_history_v6";
+const POSITION_KEY = "shortsflow_position_v6";
+
+let settings = {
+    autoplay: true,
+    mute: false,
+    smartFeed: true
+};
+
+let smartData = {
+    categories: {},
+    creators: {},
+    videos: {},
+    seen: {},
+    tokens: {}
+};
+
+let likes = {};
+
+let historyData = {
+    order: [],
+    videos: {}
+};
+
+let savedPosition = {
+    videoId: null,
+    index: 0
+};
+
+try {
+
+    settings = {
+        ...settings,
+        ...JSON.parse(
+            localStorage.getItem(SETTINGS_KEY) || "{}"
+        )
+    };
+
+    smartData = {
+        categories: {},
+        creators: {},
+        videos: {},
+        seen: {},
+        tokens: {},
+        ...JSON.parse(
+            localStorage.getItem(SMART_KEY) || "{}"
+        )
+    };
+
+    likes = JSON.parse(
+        localStorage.getItem(LIKES_KEY) || "{}"
+    );
+
+    historyData = {
+        order: [],
+        videos: {},
+        ...JSON.parse(
+            localStorage.getItem(HISTORY_KEY) || "{}"
+        )
+    };
+
+    savedPosition = {
+        videoId: null,
+        index: 0,
+        ...JSON.parse(
+            localStorage.getItem(POSITION_KEY) || "{}"
+        )
+    };
+
+} catch (e) {}
+
+
+/* =========================================================
+   STATE
+   ========================================================= */
+
+let orderedVideos = [];
+let currentIndex = 0;
+let activeArticle = null;
+let observer = null;
+let toastTimer = null;
+let activeStartedAt = 0;
+let restoringPosition = true;
+
+
+/* =========================================================
+   DOM
+   ========================================================= */
+
+const feed =
+    document.getElementById("feed");
+
+const settingsOverlay =
+    document.getElementById("settingsOverlay");
+
+const smartIndicator =
+    document.getElementById("smartIndicator");
+
+const toast =
+    document.getElementById("toast");
+
+const progressBar =
+    document.getElementById("progressBar");
+
+
+/* =========================================================
+   STORAGE FUNCTIONS
+   ========================================================= */
+
+function saveSettings() {
+    localStorage.setItem(
+        SETTINGS_KEY,
+        JSON.stringify(settings)
+    );
+}
+
+function saveLikes() {
+    localStorage.setItem(
+        LIKES_KEY,
+        JSON.stringify(likes)
+    );
+}
+
+function saveHistory() {
+    localStorage.setItem(
+        HISTORY_KEY,
+        JSON.stringify(historyData)
+    );
+}
+
+function savePosition() {
+
+    localStorage.setItem(
+        POSITION_KEY,
+        JSON.stringify({
+            videoId:
+                orderedVideos[currentIndex]?.id || null,
+            index: currentIndex
+        })
+    );
+
+}
+
+function saveSmart() {
+
+    localStorage.setItem(
+        SMART_KEY,
+        JSON.stringify(smartData)
+    );
+
+}
+
+
+/* =========================================================
+   HISTORY
+   ========================================================= */
+
+function ensureVideoHistory(videoId) {
+
+    if (!historyData.videos[videoId]) {
+
+        historyData.videos[videoId] = {
+            status: "seen",
+            firstSeen: Date.now(),
+            sessions: 0
+        };
+
+        historyData.order.push(videoId);
+    }
+
+    if (!smartData.seen) {
+        smartData.seen = {};
+    }
+
+    smartData.seen[videoId] = true;
+
+    saveSmart();
+    saveHistory();
+}
+
+function hasSeen(videoId) {
+    return !!historyData.videos[videoId];
+}
+
+
+/* =========================================================
+   HELPERS
+   ========================================================= */
+
+function clamp(n,min,max) {
+    return Math.max(min,Math.min(max,n));
+}
+
+function getVideo(id) {
+    return VIDEOS.find(v => v.id === id);
+}
+
+function getCategoryData(category) {
+
+    return smartData.categories[category] ||= {
+
+        score: 0,
+        skips: 0,
+        watches: 0,
+        longWatches: 0,
+        totalSeconds: 0,
+        lastAction: "",
+        lastAt: 0
+
+    };
+}
+
+function getCreatorData(creator) {
+
+    return smartData.creators[creator] ||= {
+
+        score: 0,
+        skips: 0,
+        watches: 0,
+        totalSeconds: 0,
+        lastAction: "",
+        lastAt: 0
+
+    };
+}
+
+
+/* =========================================================
+   TOKEN LEARNING
+   ========================================================= */
+
+function tokenize(text) {
+
+    return String(text || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g," ")
+        .split(/\s+/)
+        .filter(w =>
+            w.length >= 4 &&
+            ![
+                "when",
+                "that",
+                "this",
+                "with",
+                "from",
+                "your",
+                "they",
+                "have",
+                "what",
+                "into",
+                "just",
+                "short",
+                "minecraft",
+                "video"
+            ].includes(w)
+        );
+
+}
+
+function learnTokens(video,weight) {
+
+    tokenize(
+        `${video.title} ${video.category} ${video.creator}`
+    ).forEach(token => {
+
+        smartData.tokens[token] =
+            clamp(
+                (smartData.tokens[token] || 0) + weight,
+                -12,
+                12
+            );
+
+    });
+
+}
+
+
+/* =========================================================
+   RECORD WATCH / SKIP
+   ========================================================= */
+
+function recordLeftVideo(article) {
+
+    if (!article) return;
+
+    const videoId =
+        article.dataset.videoId;
+
+    if (!videoId) return;
+
+    const video =
+        getVideo(videoId);
+
+    if (!video) return;
+
+    const seconds =
+        activeStartedAt
+            ? (Date.now() - activeStartedAt) / 1000
+            : 0;
+
+    const meaningful =
+        seconds >= 4;
+
+    const longWatch =
+        seconds >= 12;
+
+    const now =
+        Date.now();
+
+    const previous =
+        historyData.videos[videoId] || {};
+
+    historyData.videos[videoId] = {
+
+        ...previous,
+
+        status:
+            meaningful
+                ? "watched"
+                : "skipped",
+
+        seconds:
+            Math.round(seconds * 10) / 10,
+
+        lastSeen:
+            now,
+
+        sessions:
+            (previous.sessions || 0) + 1
+
+    };
+
+    if (!historyData.order.includes(videoId)) {
+        historyData.order.push(videoId);
+    }
+
+    if (!smartData.seen) {
+        smartData.seen = {};
+    }
+
+    smartData.seen[videoId] = true;
+
+
+    const cat =
+        getCategoryData(video.category);
+
+    const creator =
+        getCreatorData(video.creator);
+
+    const vd =
+        smartData.videos[videoId] ||= {
+
+            skips: 0,
+            watches: 0,
+            longWatches: 0,
+            totalSeconds: 0,
+            lastSeen: 0,
+            score: 0
+
+        };
+
+
+    if (meaningful) {
+
+        cat.watches++;
+        cat.totalSeconds += seconds;
+        cat.lastAction = "watch";
+        cat.lastAt = now;
+
+        creator.watches++;
+        creator.totalSeconds += seconds;
+        creator.lastAction = "watch";
+        creator.lastAt = now;
+
+        vd.watches++;
+        vd.totalSeconds += seconds;
+        vd.lastSeen = now;
+
+
+        const watchReward =
+            longWatch
+                ? 4
+                : 1.5;
+
+        cat.score =
+            clamp(
+                cat.score + watchReward,
+                -30,
+                30
+            );
+
+        creator.score =
+            clamp(
+                creator.score +
+                (longWatch ? 3 : 1),
+                -24,
+                24
+            );
+
+        vd.score =
+            clamp(
+                vd.score +
+                (longWatch ? 2 : .5),
+                -15,
+                15
+            );
+
+
+        if (longWatch) {
+
+            cat.longWatches++;
+            vd.longWatches++;
+
+        }
+
+        learnTokens(
+            video,
+            longWatch ? .45 : .18
+        );
+
+        if (cat.skips > 0) {
+            cat.skips--;
+        }
+
+        if (creator.skips > 0) {
+            creator.skips--;
+        }
+
+    } else {
+
+        cat.skips++;
+        creator.skips++;
+        vd.skips++;
+        vd.lastSeen = now;
+
+        cat.lastAction = "skip";
+        creator.lastAction = "skip";
+
+        cat.lastAt = now;
+        creator.lastAt = now;
+
+        cat.score =
+            clamp(
+                cat.score -
+                (cat.skips >= 3 ? 2.4 : .8),
+                -30,
+                30
+            );
+
+        creator.score =
+            clamp(
+                creator.score -
+                (creator.skips >= 3 ? 1.8 : .6),
+                -24,
+                24
+            );
+
+        vd.score =
+            clamp(
+                vd.score - 1.5,
+                -15,
+                15
+            );
+
+        learnTokens(video,-.22);
+
+    }
+
+    saveSmart();
+    saveHistory();
+}
+
+
+/* =========================================================
+   YOUTUBE
+   ========================================================= */
+
+function youtubeURL(videoId) {
+
+    const params =
+        new URLSearchParams({
+
+            autoplay:
+                settings.autoplay ? "1" : "0",
+
+            mute:
+                settings.mute ? "1" : "0",
+
+            controls: "0",
+
+            rel: "0",
+
+            playsinline: "1",
+
+            enablejsapi: "1"
+
+        });
+
+    return (
+        "https://www.youtube.com/embed/" +
+        encodeURIComponent(videoId) +
+        "?" +
+        params.toString()
+    );
+}
+
+
+/* =========================================================
+   HTML ESCAPE
+   ========================================================= */
+
+function escapeHTML(str) {
+
+    return String(str).replace(
+        /[&<>"']/g,
+        m => ({
+            "&":"&amp;",
+            "<":"&lt;",
+            ">":"&gt;",
+            '"':"&quot;",
+            "'":"&#039;"
+        }[m])
+    );
+
+}
+
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+function showToast(msg) {
+
+    toast.textContent = msg;
+
+    toast.classList.add("show");
+
+    clearTimeout(toastTimer);
+
+    toastTimer =
+        setTimeout(
+            () => toast.classList.remove("show"),
+            1800
+        );
+
+}
+
+
+/* =========================================================
+   CREATE SHORT
+   ========================================================= */
+
+function createShort(video,index) {
+
+    const article =
+        document.createElement("article");
+
+    article.className = "short";
+
+    article.dataset.videoId =
+        video.id;
+
+    article.dataset.index =
+        index;
+
+
+    article.innerHTML = `
+
+        ${
+            smartData.seen &&
+            smartData.seen[video.id]
+                ? `
+                    <div class="seen-badge">
+                        Already watched • scroll back anytime
+                    </div>
+                `
+                : ""
+        }
+
+        <div class="video-shell">
+
+            <div class="video-touch-overlay"></div>
+
+            <div class="video-loading">
+                <div class="spinner"></div>
+            </div>
+
+            <iframe
+                title="${escapeHTML(video.title)}"
+                src="about:blank"
+                allow="autoplay; encrypted-media; picture-in-picture"
+                allowfullscreen>
+            </iframe>
+
+        </div>
+
+
+        <div class="actions">
+
+            <div class="action">
+
+                <button
+                    class="action-button like-button"
+                    aria-label="Like">
+                    ♡
+                </button>
+
+                <div class="action-label like-label">
+                    Like
+                </div>
+
+            </div>
+
+
+            <div class="action">
+
+                <button
+                    class="action-button share-button"
+                    aria-label="Share">
+                    ↗
+                </button>
+
+                <div class="action-label">
+                    Share
+                </div>
+
+            </div>
+
+
+            <div class="action">
+
+                <button
+                    class="action-button youtube-button"
+                    aria-label="YouTube">
+                    ▶
+                </button>
+
+                <div class="action-label">
+                    YouTube
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="info">
+
+            <div class="creator-row">
+
+                <div class="creator-avatar">
+                    ${escapeHTML(
+                        (video.creator || "S")[0]
+                            .toUpperCase()
+                    )}
+                </div>
+
+                <div class="creator">
+                    ${escapeHTML(video.creator)}
+                </div>
+
+                <div class="follow-pill">
+                    SHORT
+                </div>
+
+            </div>
+
+
+            <div class="description">
+                ${escapeHTML(video.title)}
+            </div>
+
+
+            <div class="info-bottom">
+
+                <div class="category">
+                    #${escapeHTML(video.category)}
+                </div>
+
+                <div class="video-number">
+                    ${index + 1} / ${orderedVideos.length}
+                </div>
+
+            </div>
+
+        </div>
+    `;
+
+
+    const iframe =
+        article.querySelector("iframe");
+
+    const shell =
+        article.querySelector(".video-shell");
+
+    const touchOverlay =
+        article.querySelector(
+            ".video-touch-overlay"
+        );
+
+
+    iframe.addEventListener(
+        "load",
+        () => {
+
+            if (
+                iframe.src !==
+                "about:blank"
+            ) {
+                shell.classList.add("loaded");
+            }
+
+        }
+    );
+
+
+    /* =====================================================
+       TAP / DOUBLE TAP
+       ===================================================== */
+
+    let tapCount = 0;
+    let tapTimer = null;
+    let isPaused = false;
+
+
+    touchOverlay.addEventListener(
+        "click",
+        e => {
+
+            tapCount++;
+
+            if (tapCount === 1) {
+
+                tapTimer =
+                    setTimeout(() => {
+
+                        tapCount = 0;
+
+                        isPaused =
+                            !isPaused;
+
+                        const command =
+                            isPaused
+                                ? "pauseVideo"
+                                : "playVideo";
+
+                        iframe.contentWindow.postMessage(
+                            JSON.stringify({
+                                event: "command",
+                                func: command,
+                                args: []
+                            }),
+                            "*"
+                        );
+
+                        triggerPlayStateAnimation(
+                            shell,
+                            isPaused
+                                ? "❚❚"
+                                : "▶"
+                        );
+
+                    },250);
+
+            } else if (tapCount === 2) {
+
+                clearTimeout(tapTimer);
+
+                tapCount = 0;
+
+                triggerHeartAnimation(
+                    shell,
+                    e
+                );
+
+                if (!likes[video.id]) {
+                    toggleLike(
+                        article,
+                        video
+                    );
+                }
+
+            }
+
+        }
+    );
+
+
+    /* =====================================================
+       LIKE
+       ===================================================== */
+
+    article
+        .querySelector(".like-button")
+        .addEventListener(
+            "click",
+            e => {
+
+                e.stopPropagation();
+
+                toggleLike(
+                    article,
+                    video
+                );
+
+            }
+        );
+
+
+    /* =====================================================
+       SHARE
+       ===================================================== */
+
+    article
+        .querySelector(".share-button")
+        .addEventListener(
+            "click",
+            async e => {
+
+                e.stopPropagation();
+
+                const url =
+                    `https://www.youtube.com/shorts/${video.id}`;
+
+                if (navigator.share) {
+
+                    try {
+
+                        await navigator.share({
+                            title: video.title,
+                            url
+                        });
+
+                    } catch (err) {}
+
+                } else {
+
+                    try {
+
+                        await navigator.clipboard.writeText(
+                            url
+                        );
+
+                        showToast(
+                            "Short link copied!"
+                        );
+
+                    } catch (err) {
+
+                        showToast(
+                            "Could not copy link"
+                        );
+
+                    }
+
+                }
+
+            }
+        );
+
+
+    /* =====================================================
+       YOUTUBE BUTTON
+       ===================================================== */
+
+    article
+        .querySelector(".youtube-button")
+        .addEventListener(
+            "click",
+            e => {
+
+                e.stopPropagation();
+
+                window.open(
+                    `https://www.youtube.com/shorts/${video.id}`,
+                    "_blank"
+                );
+
+            }
+        );
+
+
+    updateLikeButton(
+        article,
+        video
+    );
+
+
+    return article;
+}
+
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+
+function triggerPlayStateAnimation(
+    container,
+    symbol
+) {
+
+    const pop =
+        document.createElement("div");
+
+    pop.className =
+        "play-state-pop";
+
+    pop.textContent =
+        symbol;
+
+    container.appendChild(pop);
+
+    setTimeout(
+        () => pop.remove(),
+        500
+    );
+}
+
+
+function triggerHeartAnimation(
+    container,
+    event
+) {
+
+    const rect =
+        container.getBoundingClientRect();
+
+    const x =
+        event.clientX - rect.left;
+
+    const y =
+        event.clientY - rect.top;
+
+
+    const heart =
+        document.createElement("div");
+
+    heart.className =
+        "heart-pop";
+
+    heart.innerHTML =
+        "❤️";
+
+    heart.style.left =
+        `${x}px`;
+
+    heart.style.top =
+        `${y}px`;
+
+    container.appendChild(
+        heart
+    );
+
+    setTimeout(
+        () => heart.remove(),
+        800
+    );
+}
+
+
+/* =========================================================
+   LIKES
+   ========================================================= */
+
+function updateLikeButton(
+    article,
+    video
+) {
+
+    const button =
+        article.querySelector(
+            ".like-button"
+        );
+
+    const label =
+        article.querySelector(
+            ".like-label"
+        );
+
+    const liked =
+        !!likes[video.id];
+
+
+    button.classList.toggle(
+        "liked",
+        liked
+    );
+
+    button.textContent =
+        liked ? "♥" : "♡";
+
+    label.textContent =
+        liked ? "Liked" : "Like";
+}
+
+
+function toggleLike(
+    article,
+    video
+) {
+
+    if (likes[video.id]) {
+
+        delete likes[video.id];
+
+        showToast(
+            "Removed from likes"
+        );
+
+    } else {
+
+        likes[video.id] = true;
+
+        showToast(
+            "Added to likes ❤️"
+        );
+
+    }
+
+    saveLikes();
+
+    updateLikeButton(
+        article,
+        video
+    );
+}
+
+
+/* =========================================================
+   VIDEO CONTROL
+   ========================================================= */
+
+function playShort(article) {
+
+    if (!article) return;
+
+    const iframe =
+        article.querySelector(
+            "iframe"
+        );
+
+    const shell =
+        article.querySelector(
+            ".video-shell"
+        );
+
+    if (shell) {
+        shell.classList.remove(
+            "loaded"
+        );
+    }
+
+    if (iframe) {
+
+        iframe.src =
+            youtubeURL(
+                article.dataset.videoId
+            );
+
+    }
+}
+
+
+function stopShort(article) {
+
+    if (!article) return;
+
+    const iframe =
+        article.querySelector(
+            "iframe"
+        );
+
+    const shell =
+        article.querySelector(
+            ".video-shell"
+        );
+
+    if (iframe) {
+        iframe.src =
+            "about:blank";
+    }
+
+    if (shell) {
+        shell.classList.remove(
+            "loaded"
+        );
+    }
+}
+
+
+/* =========================================================
+   SMART PERSONALIZATION
+   ========================================================= */
+
+function videoPersonalScore(video) {
+
+    const cat =
+        smartData.categories[
+            video.category
+        ] || {};
+
+    const creator =
+        smartData.creators[
+            video.creator
+        ] || {};
+
+    const vd =
+        smartData.videos[
+            video.id
+        ] || {};
+
+    const history =
+        historyData.videos[
+            video.id
+        ];
+
+
+    let score = 0;
+
+
+    score +=
+        (cat.score || 0) * 1.65;
+
+    score +=
+        (creator.score || 0) * 1.25;
+
+    score +=
+        (vd.score || 0) * 1.9;
+
+
+    tokenize(
+        `${video.title} ${video.category} ${video.creator}`
+    ).forEach(token => {
+
+        score +=
+            (smartData.tokens[token] || 0)
+            * .75;
+
+    });
+
+
+    if (cat.skips >= 3) {
+
+        score -= Math.min(
+            12,
+            cat.skips * 1.4
+        );
+
+    }
+
+
+    if (creator.skips >= 3) {
+
+        score -= Math.min(
+            9,
+            creator.skips * 1.15
+        );
+
+    }
+
+
+    if (history) {
+        score -= 1000;
+    }
+
+
+    score +=
+        Math.sin(
+            hashString(video.id)
+        ) * .18;
+
+
+    return score;
+}
+
+
+function hashString(str) {
+
+    let h =
+        2166136261;
+
+    for (
+        let i = 0;
+        i < str.length;
+        i++
+    ) {
+
+        h =
+            Math.imul(
+                h ^ str.charCodeAt(i),
+                16777619
+            );
+
+    }
+
+    return (
+        (h >>> 0) /
+        4294967295
+    );
+}
+
+
+/* =========================================================
+   SMART SORT
+   ========================================================= */
+
+function smartSortVideos(videos) {
+
+    const pool =
+        videos.filter(
+            v => !hasSeen(v.id)
+        );
+
+    if (!settings.smartFeed) {
+        return [...pool];
+    }
+
+    if (pool.length <= 1) {
+        return pool;
+    }
+
+
+    const scored =
+        pool.map(video => ({
+            video,
+            score:
+                videoPersonalScore(
+                    video
+                )
+        }));
+
+
+    scored.sort(
+        (a,b) =>
+            b.score - a.score
+    );
+
+
+    const result = [];
+
+    const remaining =
+        scored.slice();
+
+    const usedCategories =
+        new Map();
+
+    const usedCreators =
+        new Map();
+
+
+    while (remaining.length) {
+
+        let bestIndex = 0;
+
+        let bestValue =
+            -Infinity;
+
+
+        for (
+            let i = 0;
+            i < Math.min(
+                remaining.length,
+                14
+            );
+            i++
+        ) {
+
+            const item =
+                remaining[i];
+
+            const v =
+                item.video;
+
+
+            const catCount =
+                usedCategories.get(
+                    v.category
+                ) || 0;
+
+
+            const creatorCount =
+                usedCreators.get(
+                    v.creator
+                ) || 0;
+
+
+            const diversityBonus =
+                Math.max(
+                    0,
+                    3 - catCount
+                ) * 1.25
+                +
+                Math.max(
+                    0,
+                    2 - creatorCount
+                ) * .8;
+
+
+            const repetitionPenalty =
+                catCount >= 3
+                    ? 5.5 *
+                      (catCount - 2)
+                    : 0;
+
+
+            const explorationBonus =
+                (catCount === 0
+                    ? 2.4
+                    : 0)
+                +
+                (creatorCount === 0
+                    ? 1.3
+                    : 0);
+
+
+            const value =
+                item.score
+                +
+                diversityBonus
+                +
+                explorationBonus
+                -
+                repetitionPenalty;
+
+
+            if (
+                value >
+                bestValue
+            ) {
+
+                bestValue =
+                    value;
+
+                bestIndex =
+                    i;
+
+            }
+
+        }
+
+
+        const [
+            picked
+        ] =
+            remaining.splice(
+                bestIndex,
+                1
+            );
+
+
+        result.push(
+            picked.video
+        );
+
+
+        usedCategories.set(
+            picked.video.category,
+            (
+                usedCategories.get(
+                    picked.video.category
+                ) || 0
+            ) + 1
+        );
+
+
+        usedCreators.set(
+            picked.video.creator,
+            (
+                usedCreators.get(
+                    picked.video.creator
+                ) || 0
+            ) + 1
+        );
+
+    }
+
+
+    return result;
+}
+
+
+/* =========================================================
+   BUILD ORDER
+   ========================================================= */
+
+function buildOrderedVideos() {
+
+    return smartSortVideos(
+        VIDEOS
+    );
+}
+
+
+/* =========================================================
+   INTERSECTION OBSERVER
+   ========================================================= */
+
+function observeShorts() {
+
+    if (observer) {
+        observer.disconnect();
+    }
+
+
+    observer =
+        new IntersectionObserver(
+            entries => {
+
+                const visible =
+                    entries
+                        .filter(
+                            entry =>
+                                entry.isIntersecting &&
+                                entry.intersectionRatio >= .65
+                        )
+                        .sort(
+                            (a,b) =>
+                                b.intersectionRatio -
+                                a.intersectionRatio
+                        )[0];
+
+
+                if (!visible) {
+                    return;
+                }
+
+
+                const nextArticle =
+                    visible.target;
+
+
+                if (
+                    nextArticle ===
+                    activeArticle
+                ) {
+                    return;
+                }
+
+
+                if (activeArticle) {
+
+                    recordLeftVideo(
+                        activeArticle
+                    );
+
+                    activeArticle.classList.remove(
+                        "active"
+                    );
+
+                    stopShort(
+                        activeArticle
+                    );
+
+                }
+
+
+                activeArticle =
+                    nextArticle;
+
+                activeArticle.classList.add(
+                    "active"
+                );
+
+                activeStartedAt =
+                    Date.now();
+
+
+                playShort(
+                    activeArticle
+                );
+
+
+                currentIndex =
+                    Number(
+                        nextArticle.dataset.index
+                    );
+
+
+                savePosition();
+
+                updateProgress();
+
+            },
+            {
+                threshold: [.65]
+            }
+        );
+
+
+    feed
+        .querySelectorAll(".short")
+        .forEach(
+            short =>
+                observer.observe(short)
+        );
+}
+
+
+/* =========================================================
+   RESTORE POSITION
+   ========================================================= */
+
+function restoreSavedPosition() {
+
+    if (!orderedVideos.length) {
+        restoringPosition = false;
+        return;
+    }
+
+
+    let targetIndex = -1;
+
+
+    if (savedPosition.videoId) {
+
+        targetIndex =
+            orderedVideos.findIndex(
+                v =>
+                    v.id ===
+                    savedPosition.videoId
+            );
+
+    }
+
+
+    if (targetIndex < 0) {
+
+        targetIndex =
+            Math.min(
+                Math.max(
+                    Number(
+                        savedPosition.index
+                    ) || 0,
+                    0
+                ),
+                orderedVideos.length - 1
+            );
+
+    }
+
+
+    currentIndex =
+        targetIndex;
+
+
+    const target =
+        feed.children[
+            targetIndex
+        ];
+
+
+    if (target) {
+
+        requestAnimationFrame(() => {
+
+            feed.scrollTo({
+                top: target.offsetTop,
+                behavior: "instant"
+            });
+
+
+            updateProgress();
+
+
+            setTimeout(() => {
+
+                restoringPosition =
+                    false;
+
+                const restored =
+                    feed.children[
+                        targetIndex
+                    ];
+
+
+                if (restored) {
+
+                    restored.classList.add(
+                        "active"
+                    );
+
+                    activeArticle =
+                        restored;
+
+                    activeStartedAt =
+                        Date.now();
+
+                    playShort(
+                        restored
+                    );
+
+                }
+
+            },120);
+
+        });
+
+    } else {
+
+        restoringPosition =
+            false;
+
+    }
+
+}
+
+
+/* =========================================================
+   BUILD FEED
+   ========================================================= */
+
+function buildFeed() {
+
+    orderedVideos =
+        buildOrderedVideos();
+
+
+    feed.innerHTML = "";
+
+
+    orderedVideos.forEach(
+        (video,index) => {
+
+            const article =
+                createShort(
+                    video,
+                    index
+                );
+
+
+            if (hasSeen(video.id)) {
+
+                article.classList.add(
+                    "seen"
+                );
+
+            }
+
+
+            feed.appendChild(
+                article
+            );
+
+        }
+    );
+
+
+    observeShorts();
+
+    updateProgress();
+
+    restoreSavedPosition();
+}
+
+
+/* =========================================================
+   PROGRESS
+   ========================================================= */
+
+function updateProgress() {
+
+    const percentage =
+        orderedVideos.length
+            ? (
+                (currentIndex + 1) /
+                orderedVideos.length
+            ) * 100
+            : 0;
+
+
+    progressBar.style.height =
+        `${percentage}%`;
+}
+
+
+/* =========================================================
+   SCROLL
+   ========================================================= */
+
+feed.addEventListener(
+    "scroll",
+    () => {
+
+        const height =
+            feed.clientHeight;
+
+
+        if (!height) {
+            return;
+        }
+
+
+        currentIndex =
+            Math.round(
+                feed.scrollTop /
+                height
+            );
+
+
+        updateProgress();
+
+
+        if (!restoringPosition) {
+            savePosition();
+        }
+
+    },
+    {
+        passive: true
+    }
+);
+
+
+/* =========================================================
+   PAGE EXIT
+   ========================================================= */
+
+window.addEventListener(
+    "beforeunload",
+    () => {
+
+        if (activeArticle) {
+
+            const seconds =
+                activeStartedAt
+                    ? (
+                        Date.now() -
+                        activeStartedAt
+                    ) / 1000
+                    : 0;
+
+
+            if (seconds >= 4) {
+
+                recordLeftVideo(
+                    activeArticle
+                );
+
+            }
+
+        }
+
+
+        savePosition();
+
+    }
+);
+
+
+/* =========================================================
+   VISIBILITY
+   ========================================================= */
+
+document.addEventListener(
+    "visibilitychange",
+    () => {
+
+        if (
+            document.visibilityState ===
+            "hidden"
+        ) {
+
+            if (activeArticle) {
+
+                const seconds =
+                    activeStartedAt
+                        ? (
+                            Date.now() -
+                            activeStartedAt
+                        ) / 1000
+                        : 0;
+
+
+                if (seconds >= 4) {
+
+                    recordLeftVideo(
+                        activeArticle
+                    );
+
+                }
+
+            }
+
+            savePosition();
+
+        } else if (activeArticle) {
+
+            activeStartedAt =
+                Date.now();
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   KEYBOARD NAVIGATION
+   ========================================================= */
+
+window.addEventListener(
+    "keydown",
+    e => {
+
+        if (
+            [
+                "ArrowUp",
+                "ArrowDown",
+                "ArrowLeft",
+                "ArrowRight"
+            ].includes(e.key)
+        ) {
+
+            if (
+                settingsOverlay.classList.contains(
+                    "open"
+                )
+            ) {
+                return;
+            }
+
+
+            let targetIndex =
+                currentIndex;
+
+
+            if (
+                e.key === "ArrowUp" ||
+                e.key === "ArrowLeft"
+            ) {
+
+                targetIndex =
+                    Math.max(
+                        0,
+                        currentIndex - 1
+                    );
+
+            } else {
+
+                targetIndex =
+                    Math.min(
+                        orderedVideos.length - 1,
+                        currentIndex + 1
+                    );
+
+            }
+
+
+            if (
+                targetIndex !==
+                currentIndex
+            ) {
+
+                e.preventDefault();
+
+
+                const targetArticle =
+                    feed.children[
+                        targetIndex
+                    ];
+
+
+                if (targetArticle) {
+
+                    targetArticle.scrollIntoView({
+                        behavior: "smooth"
+                    });
+
+                }
+
+            }
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   SETTINGS
+   ========================================================= */
+
+document
+    .getElementById("settingsButton")
+    .onclick = () => {
+
+        settingsOverlay.classList.add(
+            "open"
+        );
+
+    };
+
+
+document
+    .getElementById("closeSettings")
+    .onclick = () => {
+
+        settingsOverlay.classList.remove(
+            "open"
+        );
+
+    };
+
+
+settingsOverlay.addEventListener(
+    "click",
+    e => {
+
+        if (e.target === settingsOverlay) {
+            settingsOverlay.classList.remove("open");
+        }
+
+    }
+);
+
+
+document
+    .getElementById("autoplayToggle")
+    .onclick = function() {
+
+        settings.autoplay =
+            !settings.autoplay;
+
+        this.classList.toggle(
+            "active",
+            settings.autoplay
+        );
+
+        saveSettings();
+
+    };
+
+
+document
+    .getElementById("muteToggle")
+    .onclick = function() {
+
+        settings.mute =
+            !settings.mute;
+
+        this.classList.toggle(
+            "active",
+            settings.mute
+        );
+
+        saveSettings();
+
+    };
+
+
+document
+    .getElementById("smartFeedToggle")
+    .onclick = function() {
+
+        settings.smartFeed =
+            !settings.smartFeed;
+
+
+        this.classList.toggle(
+            "active",
+            settings.smartFeed
+        );
+
+
+        smartIndicator.classList.toggle(
+            "hidden",
+            !settings.smartFeed
+        );
+
+
+        smartIndicator.classList.toggle(
+            "learning",
+            settings.smartFeed
+        );
+
+
+        saveSettings();
+
+
+        const currentVideoId =
+            orderedVideos[
+                currentIndex
+            ]?.id || null;
+
+
+        if (currentVideoId) {
+
+            savedPosition.videoId =
+                currentVideoId;
+
+        }
+
+
+        buildFeed();
+
+
+        showToast(
+            settings.smartFeed
+                ? "Smart Feed enabled"
+                : "Smart Feed disabled"
+        );
+
+    };
+
+
+/* =========================================================
+   RESET
+   ========================================================= */
+
+document
+    .getElementById("resetButton")
+    .onclick = () => {
+
+        [
+            SETTINGS_KEY,
+            SMART_KEY,
+            LIKES_KEY,
+            HISTORY_KEY,
+            POSITION_KEY
+        ].forEach(
+            key =>
+                localStorage.removeItem(key)
+        );
+
+
+        location.reload();
+
+    };
+
+
+/* =========================================================
+   INITIAL UI
+   ========================================================= */
+
+document
+    .getElementById("autoplayToggle")
+    .classList.toggle(
+        "active",
+        settings.autoplay
+    );
+
+
+document
+    .getElementById("muteToggle")
+    .classList.toggle(
+        "active",
+        settings.mute
+    );
+
+
+document
+    .getElementById("smartFeedToggle")
+    .classList.toggle(
+        "active",
+        settings.smartFeed
+    );
+
+
+smartIndicator.classList.toggle(
+    "hidden",
+    !settings.smartFeed
+);
+
+
+smartIndicator.classList.toggle(
+    "learning",
+    settings.smartFeed
+);
+
+
+/* =========================================================
+   START
+   ========================================================= */
+
+buildFeed();
+
+</script>
+
+</body>
+</html>

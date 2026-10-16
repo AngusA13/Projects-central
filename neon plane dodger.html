@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon Overdrive ULTRA</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    overflow:hidden;
+    background:black;
+    font-family:Arial, sans-serif;
+}
+
+/* UI */
+
+#hud{
+    position:absolute;
+    top:20px;
+    left:20px;
+    color:white;
+    z-index:20;
+    text-shadow:0 0 15px cyan;
+}
+
+#score{
+    font-size:34px;
+    font-weight:bold;
+}
+
+#speed{
+    font-size:28px;
+    margin-top:5px;
+    color:#44ffcc;
+}
+
+#boost{
+    font-size:28px;
+    margin-top:5px;
+    color:#88ffff;
+}
+
+/* START MENU */
+
+#startMenu{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,0.7);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    z-index:100;
+    backdrop-filter:blur(8px);
+}
+
+#startTitle{
+    font-size:90px;
+    color:#66ffff;
+    text-shadow:0 0 30px cyan;
+    margin-bottom:20px;
+}
+
+.menuBtn{
+    padding:18px 45px;
+    font-size:30px;
+    border:none;
+    border-radius:15px;
+    background:#00ffff;
+    color:black;
+    font-weight:bold;
+    cursor:pointer;
+    margin-top:20px;
+    box-shadow:0 0 20px cyan;
+}
+
+.menuBtn:hover{
+    transform:scale(1.05);
+}
+
+/* GAME OVER */
+
+#gameOver{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,0.75);
+    display:none;
+    align-items:center;
+    justify-content:center;
+    flex-direction:column;
+    z-index:200;
+    backdrop-filter:blur(8px);
+}
+
+#gameOver h1{
+    font-size:80px;
+    color:#ff2255;
+    text-shadow:0 0 30px #ff2255;
+}
+
+#finalScore{
+    color:white;
+    font-size:35px;
+    margin-top:20px;
+}
+
+/* UPGRADES */
+
+#upgradePanel{
+    position:absolute;
+    left:20px;
+    top:180px;
+    width:300px;
+
+    background:rgba(0,0,0,0.65);
+
+    border:2px solid cyan;
+
+    border-radius:20px;
+
+    padding:20px;
+
+    color:white;
+
+    z-index:20;
+
+    box-shadow:0 0 20px rgba(0,255,255,0.5);
+}
+
+.upgrade{
+    margin-top:15px;
+    border:1px solid rgba(0,255,255,0.3);
+    border-radius:12px;
+    padding:15px;
+}
+
+.buyBtn{
+    margin-top:10px;
+    width:100%;
+    padding:10px;
+    border:none;
+    border-radius:10px;
+    background:#00ffff;
+    color:black;
+    font-size:18px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+/* CONTROLS */
+
+#controls{
+    position:absolute;
+    right:20px;
+    top:180px;
+
+    width:260px;
+
+    background:rgba(0,0,0,0.65);
+
+    border:2px solid cyan;
+
+    border-radius:20px;
+
+    padding:20px;
+
+    color:white;
+
+    z-index:20;
+
+    box-shadow:0 0 20px rgba(0,255,255,0.5);
+}
+
+.control{
+    margin-top:18px;
+    font-size:22px;
+}
+
+/* PAUSE */
+
+#pauseMenu{
+    position:absolute;
+
+    right:20px;
+    bottom:30px;
+
+    width:260px;
+
+    background:rgba(0,0,0,0.75);
+
+    border:2px solid cyan;
+
+    border-radius:20px;
+
+    padding:20px;
+
+    color:white;
+
+    z-index:50;
+
+    display:none;
+
+    box-shadow:0 0 20px rgba(0,255,255,0.5);
+}
+
+.pauseBtn{
+    width:100%;
+    margin-top:15px;
+    padding:14px;
+    font-size:22px;
+    border:none;
+    border-radius:10px;
+    background:#001d22;
+    color:white;
+    border:1px solid cyan;
+    cursor:pointer;
+}
+
+.pauseBtn:hover{
+    background:cyan;
+    color:black;
+}
+
+#bottomText{
+    position:absolute;
+    bottom:20px;
+    width:100%;
+    text-align:center;
+    color:white;
+    opacity:0.8;
+    font-size:22px;
+    z-index:20;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="hud">
+    <div id="score">SCORE: 0</div>
+    <div id="speed">SPEED: 0 KM/H</div>
+    <div id="boost">BOOST: ██████████</div>
+</div>
+
+<!-- START MENU -->
+
+<div id="startMenu">
+
+    <div id="startTitle">NEON OVERDRIVE</div>
+
+    <button class="menuBtn" onclick="startGame()">
+        START GAME
+    </button>
+
+</div>
+
+<!-- GAME OVER -->
+
+<div id="gameOver">
+
+    <h1>GAME OVER</h1>
+
+    <div id="finalScore">Score: 0</div>
+
+    <button class="menuBtn" onclick="restartGame()">
+        PLAY AGAIN
+    </button>
+
+</div>
+
+<!-- UPGRADES -->
+
+<div id="upgradePanel">
+
+<h1 style="text-align:center;color:#66ffff;">
+UPGRADES
+</h1>
+
+<div class="upgrade">
+    <h2>SPEED</h2>
+    <p>Increase top speed</p>
+
+    <button class="buyBtn" onclick="buySpeed()">
+        BUY - 500
+    </button>
+</div>
+
+<div class="upgrade">
+    <h2>BOOST</h2>
+    <p>Increase boost amount</p>
+
+    <button class="buyBtn" onclick="buyBoost()">
+        BUY - 700
+    </button>
+</div>
+
+</div>
+
+<!-- CONTROLS -->
+
+<div id="controls">
+
+<h1 style="text-align:center;color:#66ffff;">
+CONTROLS
+</h1>
+
+<div class="control">A / D = Move</div>
+<div class="control">SHIFT = Boost</div>
+<div class="control">ESC = Pause</div>
+
+</div>
+
+<!-- PAUSE -->
+
+<div id="pauseMenu">
+
+<h1 style="text-align:center;">
+PAUSED
+</h1>
+
+<button class="pauseBtn" onclick="resumeGame()">
+RESUME
+</button>
+
+<button class="pauseBtn" onclick="restartGame()">
+RESTART
+</button>
+
+</div>
+
+<div id="bottomText">
+Use A / D or Arrow Keys to steer. Avoid Red Obstacles and collect Yellow Orbs!
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<script>
+
+let scene,camera,renderer;
+
+let ship;
+
+let roadSegments=[];
+let obstacles=[];
+let pickups=[];
+
+let score=0;
+
+let baseSpeed=1;
+let speed=1;
+
+let boost=100;
+
+let gameStarted=false;
+let paused=false;
+let dead=false;
+
+let currentLane=1;
+
+const lanes=[-4,0,4];
+
+init();
+animate();
+
+/* INIT */
+
+function init(){
+
+scene=new THREE.Scene();
+
+scene.background=new THREE.Color(0x01030a);
+
+scene.fog=new THREE.FogExp2(0x02040a,0.015);
+
+camera=new THREE.PerspectiveCamera(
+70,
+window.innerWidth/window.innerHeight,
+0.1,
+1000
+);
+
+camera.position.set(0,2.2,10);
+
+renderer=new THREE.WebGLRenderer({
+    antialias:true
+});
+
+renderer.setSize(window.innerWidth,window.innerHeight);
+
+renderer.setPixelRatio(window.devicePixelRatio);
+
+document.body.appendChild(renderer.domElement);
+
+/* LIGHTS */
+
+const ambient=new THREE.AmbientLight(0xffffff,0.7);
+
+scene.add(ambient);
+
+const light=new THREE.DirectionalLight(0x00ffff,2);
+
+light.position.set(0,20,10);
+
+scene.add(light);
+
+/* SHIP */
+
+createShip();
+
+/* ROAD */
+
+for(let i=0;i<20;i++){
+    createRoad(-i*20);
+}
+
+/* STARS */
+
+createStars();
+
+window.addEventListener("keydown",keyDown);
+
+window.addEventListener("keyup",keyUp);
+
+window.addEventListener("resize",resize);
+
+}
+
+/* START */
+
+function startGame(){
+
+gameStarted=true;
+
+dead=false;
+
+document.getElementById("startMenu").style.display="none";
+
+document.getElementById("gameOver").style.display="none";
+
+}
+
+/* RESTART */
+
+function restartGame(){
+
+location.reload();
+
+}
+
+/* SHIP */
+
+function createShip(){
+
+ship=new THREE.Group();
+
+const bodyGeo=new THREE.ConeGeometry(0.7,3,4);
+
+bodyGeo.rotateX(Math.PI/2);
+
+const bodyMat=new THREE.MeshStandardMaterial({
+
+    color:0x99ffff,
+
+    emissive:0x00ffff,
+
+    emissiveIntensity:2,
+
+    metalness:1,
+
+    roughness:0.2
+
+});
+
+const body=new THREE.Mesh(bodyGeo,bodyMat);
+
+ship.add(body);
+
+/* WINGS */
+
+const wingGeo=new THREE.BoxGeometry(3,0.1,1);
+
+const wingMat=new THREE.MeshStandardMaterial({
+
+    color:0x55ffff,
+
+    emissive:0x0099ff,
+
+    emissiveIntensity:2
+
+});
+
+const wings=new THREE.Mesh(wingGeo,wingMat);
+
+wings.position.set(0,-0.1,0.3);
+
+ship.add(wings);
+
+/* ENGINE */
+
+const engineGeo=new THREE.CylinderGeometry(0.3,0.3,0.4,12);
+
+engineGeo.rotateX(Math.PI/2);
+
+const engineMat=new THREE.MeshBasicMaterial({
+
+    color:0x00ffff
+
+});
+
+const engine=new THREE.Mesh(engineGeo,engineMat);
+
+engine.position.z=1.4;
+
+ship.add(engine);
+
+/* TRAIL */
+
+const trail=new THREE.Mesh(
+
+new THREE.PlaneGeometry(1,6),
+
+new THREE.MeshBasicMaterial({
+
+    color:0x00ffff,
+
+    transparent:true,
+
+    opacity:0.5,
+
+    side:THREE.DoubleSide
+
+})
+
+);
+
+trail.rotation.x=-Math.PI/2;
+
+trail.position.z=4;
+
+ship.add(trail);
+
+ship.position.y=0.5;
+
+scene.add(ship);
+
+}
+
+/* ROAD */
+
+function createRoad(z){
+
+const segment=new THREE.Group();
+
+const road=new THREE.Mesh(
+
+new THREE.PlaneGeometry(24,20),
+
+new THREE.MeshStandardMaterial({
+
+    color:0x061522,
+
+    metalness:0.8,
+
+    roughness:0.5
+
+})
+
+);
+
+road.rotation.x=-Math.PI/2;
+
+segment.add(road);
+
+/* GRID */
+
+const grid=new THREE.GridHelper(
+
+24,
+12,
+0x00ffff,
+0x003344
+
+);
+
+grid.position.y=0.01;
+
+segment.add(grid);
+
+/* SIDE LIGHTS */
+
+const railGeo=new THREE.BoxGeometry(0.2,0.2,20);
+
+const railMat=new THREE.MeshStandardMaterial({
+
+    color:0x66ffff,
+
+    emissive:0x00ffff,
+
+    emissiveIntensity:5
+
+});
+
+const leftRail=new THREE.Mesh(railGeo,railMat);
+
+leftRail.position.set(-12,0.2,0);
+
+const rightRail=leftRail.clone();
+
+rightRail.position.x=12;
+
+segment.add(leftRail,rightRail);
+
+/* CENTER LINES */
+
+for(let i=-8;i<8;i+=4){
+
+const line=new THREE.Mesh(
+
+new THREE.BoxGeometry(0.2,0.05,2),
+
+new THREE.MeshBasicMaterial({
+
+    color:0x00ffff
+
+})
+
+);
+
+line.position.set(0,0.03,i);
+
+segment.add(line);
+
+}
+
+/* BUILDINGS */
+
+for(let side=-1;side<=1;side+=2){
+
+for(let i=0;i<6;i++){
+
+const h=Math.random()*14+5;
+
+const building=new THREE.Mesh(
+
+new THREE.BoxGeometry(3,h,3),
+
+new THREE.MeshStandardMaterial({
+
+    color:0x050510,
+
+    emissive:Math.random()>0.5?0x00ffff:0xff00ff,
+
+    emissiveIntensity:2
+
+})
+
+);
+
+building.position.set(
+
+side*(16+Math.random()*8),
+
+h/2,
+
+Math.random()*20-10
+
+);
+
+segment.add(building);
+
+}
+
+}
+
+segment.position.z=z;
+
+scene.add(segment);
+
+roadSegments.push(segment);
+
+if(z<-40){
+    spawnObjects(z);
+}
+
+}
+
+/* STARS */
+
+function createStars(){
+
+for(let i=0;i<700;i++){
+
+const star=new THREE.Mesh(
+
+new THREE.SphereGeometry(0.04,4,4),
+
+new THREE.MeshBasicMaterial({
+
+    color:0xffffff
+
+})
+
+);
+
+star.position.set(
+
+(Math.random()-0.5)*300,
+
+Math.random()*100,
+
+-Math.random()*700
+
+);
+
+scene.add(star);
+
+}
+
+}
+
+/* OBJECTS */
+
+function spawnObjects(z){
+
+const lane=lanes[Math.floor(Math.random()*3)];
+
+if(Math.random()>0.4){
+
+const obs=new THREE.Mesh(
+
+new THREE.BoxGeometry(2,2,2),
+
+new THREE.MeshStandardMaterial({
+
+    color:0xff0033,
+
+    emissive:0xff0033,
+
+    emissiveIntensity:3
+
+})
+
+);
+
+obs.position.set(lane,1,z);
+
+scene.add(obs);
+
+obstacles.push(obs);
+
+}else{
+
+const gem=new THREE.Mesh(
+
+new THREE.OctahedronGeometry(0.7),
+
+new THREE.MeshStandardMaterial({
+
+    color:0xffff00,
+
+    emissive:0xffcc00,
+
+    emissiveIntensity:3
+
+})
+
+);
+
+gem.position.set(lane,1,z);
+
+scene.add(gem);
+
+pickups.push(gem);
+
+}
+
+}
+
+/* CONTROLS */
+
+function keyDown(e){
+
+if(!gameStarted || dead) return;
+
+if(e.key==="a"||e.key==="ArrowLeft"){
+
+    if(currentLane>0){
+        currentLane--;
+    }
+
+}
+
+if(e.key==="d"||e.key==="ArrowRight"){
+
+    if(currentLane<2){
+        currentLane++;
+    }
+
+}
+
+if(e.key==="Shift"){
+
+    if(boost>0){
+        speed=2.2;
+    }
+
+}
+
+if(e.key==="Escape"){
+
+    paused=!paused;
+
+    document.getElementById("pauseMenu").style.display=
+    paused?"block":"none";
+
+}
+
+}
+
+function keyUp(e){
+
+if(e.key==="Shift"){
+    speed=baseSpeed;
+}
+
+}
+
+/* UPGRADES */
+
+function buySpeed(){
+
+if(score>=500){
+
+    score-=500;
+
+    baseSpeed+=0.2;
+
+}
+
+}
+
+function buyBoost(){
+
+if(score>=700){
+
+    score-=700;
+
+    boost=100;
+
+}
+
+}
+
+/* RESUME */
+
+function resumeGame(){
+
+paused=false;
+
+document.getElementById("pauseMenu").style.display="none";
+
+}
+
+/* GAME OVER */
+
+function gameOver(){
+
+dead=true;
+
+gameStarted=false;
+
+document.getElementById("finalScore").innerText=
+"Score: "+score;
+
+document.getElementById("gameOver").style.display="flex";
+
+}
+
+/* ANIMATE */
+
+function animate(){
+
+requestAnimationFrame(animate);
+
+if(gameStarted && !paused && !dead){
+
+score++;
+
+document.getElementById("score").innerText=
+"SCORE: "+score;
+
+document.getElementById("speed").innerText=
+"SPEED: "+Math.floor(speed*1200)+" KM/H";
+
+/* BOOST BAR */
+
+let bars=Math.floor(boost/10);
+
+document.getElementById("boost").innerText=
+"BOOST: "+"█".repeat(bars);
+
+/* SHIP */
+
+const targetX=lanes[currentLane];
+
+ship.position.x+=
+(targetX-ship.position.x)*0.12;
+
+/* DRIFT */
+
+const drift=targetX-ship.position.x;
+
+ship.rotation.z=drift*-0.25;
+
+ship.rotation.y=drift*0.1;
+
+/* CAMERA */
+
+camera.position.x+=
+(ship.position.x-camera.position.x)*0.04;
+
+camera.lookAt(ship.position.x,1,-10);
+
+/* BOOST */
+
+if(speed>baseSpeed){
+
+boost-=0.5;
+
+if(boost<=0){
+
+    boost=0;
+
+    speed=baseSpeed;
+
+}
+
+}else{
+
+boost+=0.15;
+
+if(boost>100){
+    boost=100;
+}
+
+}
+
+/* ROAD */
+
+roadSegments.forEach(segment=>{
+
+segment.position.z+=speed;
+
+if(segment.position.z>20){
+
+    let minZ=0;
+
+    roadSegments.forEach(s=>{
+
+        if(s.position.z<minZ){
+            minZ=s.position.z;
+        }
+
+    });
+
+    segment.position.z=minZ-20;
+
+    spawnObjects(segment.position.z);
+
+}
+
+});
+
+/* OBSTACLES */
+
+obstacles.forEach((obs,index)=>{
+
+obs.position.z+=speed;
+
+obs.rotation.x+=0.03;
+obs.rotation.y+=0.03;
+
+const dx=Math.abs(
+obs.position.x-ship.position.x
+);
+
+const dz=Math.abs(
+obs.position.z-ship.position.z
+);
+
+if(dx<1.5&&dz<1.5){
+
+    gameOver();
+
+}
+
+if(obs.position.z>15){
+
+    scene.remove(obs);
+
+    obstacles.splice(index,1);
+
+}
+
+});
+
+/* PICKUPS */
+
+pickups.forEach((gem,index)=>{
+
+gem.position.z+=speed;
+
+gem.rotation.y+=0.05;
+
+const dx=Math.abs(
+gem.position.x-ship.position.x
+);
+
+const dz=Math.abs(
+gem.position.z-ship.position.z
+);
+
+if(dx<1.5&&dz<1.5){
+
+    score+=500;
+
+    scene.remove(gem);
+
+    pickups.splice(index,1);
+
+}
+
+if(gem.position.z>15){
+
+    scene.remove(gem);
+
+    pickups.splice(index,1);
+
+}
+
+});
+
+}
+
+renderer.render(scene,camera);
+
+}
+
+/* RESIZE */
+
+function resize(){
+
+camera.aspect=
+window.innerWidth/window.innerHeight;
+
+camera.updateProjectionMatrix();
+
+renderer.setSize(
+window.innerWidth,
+window.innerHeight
+);
+
+}
+
+</script>
+
+</body>
+</html>

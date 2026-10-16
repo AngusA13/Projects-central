@@ -1,0 +1,1305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mega Air Dirt Bike - Free Roam</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { margin: 0; overflow: hidden; background: #7ec0ee; font-family: 'Orbitron', sans-serif; user-select: none; }
+
+        #start-screen {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: radial-gradient(circle, rgba(255,255,255,0.9) 0%, rgba(126,192,238,0.9) 100%);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; backdrop-filter: blur(8px); transition: opacity 0.5s;
+        }
+        #title {
+            color: #111; font-size: 64px; font-weight: 900; text-transform: uppercase;
+            text-shadow: 0 0 20px #fff, 0 0 40px #fff; margin-bottom: 8px; text-align: center;
+        }
+        #subtitle { color: #ff5500; font-size: 20px; letter-spacing: 5px; margin-bottom: 34px; text-shadow: 0 0 10px rgba(255, 85, 0, 0.3); }
+
+        #bike-select { display: flex; gap: 18px; margin-bottom: 34px; flex-wrap: wrap; justify-content: center; padding: 0 20px; }
+        .bike-card {
+            width: 170px; background: rgba(20,30,40,0.65); border: 3px solid rgba(255,255,255,0.25);
+            border-radius: 12px; padding: 16px; cursor: pointer; transition: all 0.2s; text-align: center;
+        }
+        .bike-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.5); }
+        .bike-card.selected { border-color: var(--bike-accent, #ff5500); box-shadow: 0 0 25px var(--bike-accent, #ff5500); }
+        .bike-swatch { width: 36px; height: 36px; border-radius: 50%; margin: 0 auto 10px; }
+        .bike-card h4 { margin: 0 0 6px; color: #fff; font-size: 16px; letter-spacing: 1px; }
+        .bike-card p { margin: 0; color: #cfd8e3; font-size: 11px; font-family: sans-serif; line-height: 1.5; }
+        .bike-stats { display: flex; justify-content: space-between; margin-top: 10px; font-family: sans-serif; font-size: 9px; color: #8fe8d0; letter-spacing: 1px; }
+
+        #start-btn {
+            background: rgba(255, 85, 0, 0.1); color: #111; font-family: 'Orbitron', sans-serif; font-size: 26px; font-weight: 700;
+            padding: 14px 46px; border: 3px solid #ff5500; border-radius: 8px; cursor: pointer;
+            box-shadow: 0 0 20px rgba(255, 85, 0, 0.4), inset 0 0 15px rgba(255, 85, 0, 0.2); transition: all 0.2s;
+        }
+        #start-btn:hover { background: #ff5500; color: #fff; box-shadow: 0 0 40px #ff5500, inset 0 0 20px #fff; transform: scale(1.05); }
+
+        #hud-container { display: none; }
+        #controls {
+            position: absolute; top: 20px; left: 20px; background: rgba(20, 30, 40, 0.7); backdrop-filter: blur(12px);
+            border-left: 4px solid #ff5500; padding: 20px; border-radius: 0 12px 12px 0; color: #fff; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        #controls h3 { margin: 0 0 15px 0; color: #00ffcc; font-size: 20px; letter-spacing: 2px; }
+        #controls p { margin: 8px 0; font-size: 14px; font-family: sans-serif; }
+        #controls b { color: #ff5500; display: inline-block; width: 85px; font-family: 'Orbitron', sans-serif; }
+
+        #speedo {
+            position: absolute; bottom: 40px; right: 40px; background: rgba(20, 30, 40, 0.85); padding: 25px;
+            border-radius: 20px; border: 2px solid rgba(255, 255, 255, 0.2); width: 280px; box-shadow: 0 15px 40px rgba(0,0,0,0.4); transform: skewX(-8deg);
+        }
+        #speed-text { color: #fff; font-size: 55px; font-weight: 900; text-align: right; margin-bottom: 8px; text-shadow: 0 0 15px rgba(255,255,255,0.5); }
+        #speed-text span { font-size: 22px; color: #00ffcc; }
+        .bar-bg { width: 100%; height: 18px; background: #111; border-radius: 10px; overflow: hidden; border: 1px solid #333; }
+        #rpm-bar { width: 0%; height: 100%; background: linear-gradient(90deg, #00ffcc, #ff5500); box-shadow: 0 0 15px #ff5500; transition: width 0.1s linear; }
+
+        #air-indicator {
+            position: absolute; top: 20px; right: 20px; color: #00ffcc; font-size: 18px; font-weight: 700;
+            background: rgba(20, 30, 40, 0.7); padding: 10px 20px; border-radius: 8px; display: none;
+            border: 1px solid #00ffcc; text-shadow: 0 0 10px #00ffcc;
+        }
+
+        #cp-hud {
+            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
+            display: flex; align-items: center; gap: 10px;
+            background: rgba(20, 30, 40, 0.7); backdrop-filter: blur(12px);
+            padding: 12px 26px; border-radius: 12px; border-bottom: 3px solid #00ffcc;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3); color: #fff; font-size: 18px; letter-spacing: 2px;
+        }
+        #cp-hud b { color: #00ffcc; }
+        #score-value { color: #ffdd00 !important; }
+        #cp-hud .divider { color: #556; margin: 0 4px; }
+
+        #trick-toast {
+            position: absolute; top: 150px; left: 50%; transform: translateX(-50%) scale(0.9);
+            background: rgba(255, 85, 0, 0.18); border: 2px solid #ff5500; color: #fff;
+            padding: 10px 26px; border-radius: 10px; font-size: 20px; font-weight: 900; letter-spacing: 2px;
+            box-shadow: 0 0 30px rgba(255,85,0,0.4); opacity: 0; pointer-events: none;
+            transition: opacity 0.25s, transform 0.25s;
+        }
+        #trick-toast.show { opacity: 1; transform: translateX(-50%) scale(1); }
+
+        #toast {
+            position: absolute; top: 90px; left: 50%; transform: translateX(-50%);
+            background: rgba(0, 255, 204, 0.15); border: 2px solid #00ffcc; color: #fff;
+            padding: 14px 30px; border-radius: 10px; font-size: 16px; letter-spacing: 2px;
+            box-shadow: 0 0 30px rgba(0,255,204,0.4); opacity: 0; pointer-events: none; transition: opacity 0.6s;
+        }
+        #toast.show { opacity: 1; }
+
+        #touch-controls { display: none; position: absolute; bottom: 0; left: 0; width: 100%; z-index: 50; }
+        #touch-wheelie { display: none; position: absolute; bottom: 104px; left: 50%; transform: translateX(-50%); gap: 14px; z-index: 50; }
+        @media (hover: none) and (pointer: coarse) {
+            #touch-controls { display: flex; justify-content: space-between; padding: 0 20px 24px; box-sizing: border-box; }
+            #touch-wheelie { display: flex; }
+            #speedo { display: none; }
+        }
+        .touch-pad { display: flex; gap: 14px; }
+        .touch-btn {
+            width: 64px; height: 64px; border-radius: 50%;
+            background: rgba(20, 30, 40, 0.65); border: 2px solid rgba(255,255,255,0.3);
+            color: #fff; font-size: 22px; display: flex; align-items: center; justify-content: center;
+            font-family: 'Orbitron', sans-serif; touch-action: none;
+        }
+        .touch-btn.active { background: rgba(255, 85, 0, 0.6); border-color: #ff5500; }
+        #touch-jump { width: 80px; height: 80px; align-self: flex-end; }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen">
+        <div id="title">MEGA AIR</div>
+        <div id="subtitle">OPEN WORLD MOTOCROSS</div>
+        <div id="bike-select">
+            <div class="bike-card selected" data-idx="0" style="--bike-accent:#00ffcc">
+                <div class="bike-swatch" style="background:#00ffcc"></div>
+                <h4>TRAILBLAZER</h4>
+                <p>Balanced all-rounder. Easy to control anywhere on the map.</p>
+                <div class="bike-stats"><span>SPD ●●●</span><span>ACC ●●●</span><span>WHL ●●●</span></div>
+            </div>
+            <div class="bike-card" data-idx="1" style="--bike-accent:#ff5500">
+                <div class="bike-swatch" style="background:#ff5500"></div>
+                <h4>ROCKET</h4>
+                <p>Highest top speed, but twitchier and slower off the line.</p>
+                <div class="bike-stats"><span>SPD ●●●●●</span><span>ACC ●●</span><span>WHL ●●</span></div>
+            </div>
+            <div class="bike-card" data-idx="2" style="--bike-accent:#7f77dd">
+                <div class="bike-swatch" style="background:#7f77dd"></div>
+                <h4>TRIALS</h4>
+                <p>Nimble and king of wheelies, but a lower top end.</p>
+                <div class="bike-stats"><span>SPD ●●</span><span>ACC ●●●●●</span><span>WHL ●●●●●</span></div>
+            </div>
+        </div>
+        <button id="start-btn">IGNITE ENGINE</button>
+    </div>
+
+    <div id="air-indicator">AIRBORNE (Q/E TILT)</div>
+    <div id="toast">ALL CHECKPOINTS FOUND — NICE RIDING!</div>
+
+    <div id="hud-container">
+        <div id="cp-hud">CHECKPOINTS <b id="cp-current">0</b>/<span id="cp-total">0</span><span class="divider">·</span>SCORE <b id="score-value">0</b></div>
+        <div id="trick-toast"></div>
+
+        <div id="controls">
+            <h3>TRANSMISSION</h3>
+            <p><b>W / Up</b> Gas</p>
+            <p><b>S / Down</b> Brake</p>
+            <p><b>A / D</b> Steer / Air Roll</p>
+            <p><b>Q / PgUp</b> Wheelie (Ground) / Flip Back (Air)</p>
+            <p><b>E / PgDn</b> Stoppie (Ground) / Flip Fwd (Air)</p>
+            <p><b>Space</b> Bunny Hop</p>
+            <p><b>R</b> Reset Bike</p>
+        </div>
+
+        <div id="speedo">
+            <div id="speed-text">0 <span>MPH</span></div>
+            <div class="bar-bg"><div id="rpm-bar"></div></div>
+        </div>
+
+        <div id="touch-wheelie">
+            <div class="touch-btn" id="t-wheelie-down">E</div>
+            <div class="touch-btn" id="t-wheelie-up">Q</div>
+        </div>
+
+        <div id="touch-controls">
+            <div class="touch-pad">
+                <div class="touch-btn" id="t-left">&larr;</div>
+                <div class="touch-btn" id="t-right">&rarr;</div>
+            </div>
+            <div class="touch-pad">
+                <div class="touch-btn" id="t-brake">S</div>
+                <div class="touch-btn" id="t-jump">JMP</div>
+                <div class="touch-btn" id="t-gas">W</div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cannon.js/0.6.2/cannon.min.js"></script>
+
+    <script>
+        // ============================================================
+        //  BIKE ROSTER
+        // ============================================================
+        const BIKES = [
+            { name: 'Trailblazer', color: 0x00ffcc, maxSpeed: 70, accel: 45, turnRate: 2.5, wheelieRate: 2.0, wheelieMax: 0.6 },
+            { name: 'Rocket',      color: 0xff5500, maxSpeed: 92, accel: 34, turnRate: 1.9, wheelieRate: 1.5, wheelieMax: 0.42 },
+            { name: 'Trials',      color: 0x7f77dd, maxSpeed: 54, accel: 56, turnRate: 3.2, wheelieRate: 2.9, wheelieMax: 0.85 }
+        ];
+        let selectedBikeIdx = 0;
+        document.querySelectorAll('.bike-card').forEach(card => {
+            card.addEventListener('click', () => {
+                document.querySelectorAll('.bike-card').forEach(c => c.classList.remove('selected'));
+                card.classList.add('selected');
+                selectedBikeIdx = parseInt(card.dataset.idx, 10);
+            });
+        });
+
+        const startScreen = document.getElementById('start-screen');
+        const hudContainer = document.getElementById('hud-container');
+        const startBtn = document.getElementById('start-btn');
+        const airIndicator = document.getElementById('air-indicator');
+        const toast = document.getElementById('toast');
+        const cpCurrentEl = document.getElementById('cp-current');
+        const cpTotalEl = document.getElementById('cp-total');
+        const scoreEl = document.getElementById('score-value');
+        const trickToast = document.getElementById('trick-toast');
+        let gameActive = false;
+
+        // ============================================================
+        //  SCENE / PHYSICS BOILERPLATE
+        // ============================================================
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x7ec0ee);
+        scene.fog = new THREE.FogExp2(0x7ec0ee, 0.0016);
+
+        const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 3000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        document.body.appendChild(renderer.domElement);
+
+        const world = new CANNON.World();
+        world.gravity.set(0, -22, 0);
+
+        const groundMat = new CANNON.Material("ground");
+        const bikeMat = new CANNON.Material("bike");
+        const contactMat = new CANNON.ContactMaterial(groundMat, bikeMat, {
+            friction: 0.7,
+            restitution: 0.0,
+            contactEquationStiffness: 1e7,
+            contactEquationRelaxation: 4
+        });
+        world.addContactMaterial(contactMat);
+
+        scene.add(new THREE.AmbientLight(0xffffff, 0.65));
+        const sun = new THREE.DirectionalLight(0xffffee, 1.1);
+        sun.position.set(200, 350, 150);
+        sun.castShadow = true;
+        sun.shadow.mapSize.width = 2048;
+        sun.shadow.mapSize.height = 2048;
+        sun.shadow.camera.left = -300; sun.shadow.camera.right = 300;
+        sun.shadow.camera.top = 300; sun.shadow.camera.bottom = -300;
+        sun.shadow.camera.far = 900;
+        scene.add(sun);
+
+        // Deep safety-net floor far below in case anything ever slips past the terrain clamp.
+        const safetyFloor = new CANNON.Body({ mass: 0, material: groundMat });
+        safetyFloor.addShape(new CANNON.Plane());
+        safetyFloor.quaternion.setFromAxisAngle(new CANNON.Vec3(1, 0, 0), -Math.PI / 2);
+        safetyFloor.position.set(0, -150, 0);
+        world.addBody(safetyFloor);
+
+        // ============================================================
+        //  TERRAIN MATH — pure functions of (x,z), valid everywhere.
+        //  This is what makes the map infinite: there's no "edge" to fall off,
+        //  the world is streamed in as chunks around the bike (see below).
+        // ============================================================
+        const BIKE_RADIUS = 0.65;
+        const WORLD_FEATURE_RADIUS = 430; // radius of the hand-built "park" area near spawn
+
+        const roads = [
+            { a: new THREE.Vector2(-420, -420), b: new THREE.Vector2(420, 420), width: 13 },
+            { a: new THREE.Vector2(-420, 300), b: new THREE.Vector2(380, -380), width: 11 }
+        ];
+        const mudPatches = [
+            { x: -180, z: 120, r: 34 },
+            { x: 220, z: -70, r: 27 },
+            { x: -60, z: -260, r: 30 },
+            { x: 300, z: 260, r: 24 },
+            { x: -320, z: -30, r: 22 }
+        ];
+        const canyons = [
+            { a: new THREE.Vector2(80, -40), b: new THREE.Vector2(80, -160), width: 24, depth: 8 }
+        ];
+        const featurePads = [];
+
+        function rawHills(x, z) {
+            return 4.2 * Math.sin(x * 0.008) * Math.cos(z * 0.008)
+                 + 1.6 * Math.sin(x * 0.02 + z * 0.015)
+                 + 0.6 * Math.sin(x * 0.05 - z * 0.04);
+        }
+        function rawHillsSmooth(x, z) {
+            return 4.2 * Math.sin(x * 0.008) * Math.cos(z * 0.008);
+        }
+        function distToSegment(px, pz, ax, az, bx, bz) {
+            const abx = bx - ax, abz = bz - az;
+            const apx = px - ax, apz = pz - az;
+            const abLen2 = abx * abx + abz * abz;
+            let t = abLen2 > 0 ? (apx * abx + apz * abz) / abLen2 : 0;
+            t = Math.max(0, Math.min(1, t));
+            const cx = ax + abx * t, cz = az + abz * t;
+            return Math.hypot(px - cx, pz - cz);
+        }
+        function roadFactor(x, z) {
+            let f = 0;
+            for (const road of roads) {
+                const d = distToSegment(x, z, road.a.x, road.a.y, road.b.x, road.b.y);
+                const t = 1 - THREE.MathUtils.clamp(d / road.width, 0, 1);
+                if (t > f) f = t;
+            }
+            return f;
+        }
+        function mudFactor(x, z) {
+            let f = 0;
+            for (const m of mudPatches) {
+                const d = Math.hypot(x - m.x, z - m.z);
+                const t = 1 - THREE.MathUtils.clamp(d / m.r, 0, 1);
+                if (t > f) f = t;
+            }
+            return f;
+        }
+        function canyonFactor(x, z) {
+            let f = 0, depth = 0;
+            for (const c of canyons) {
+                const d = distToSegment(x, z, c.a.x, c.a.y, c.b.x, c.b.y);
+                const t = 1 - THREE.MathUtils.clamp(d / c.width, 0, 1);
+                if (t > f) { f = t; depth = c.depth; }
+            }
+            return { f, depth };
+        }
+        function registerPad(x, z, radius, extraHeight = 0) {
+            const h = rawHills(x, z) + extraHeight;
+            featurePads.push({ x, z, radius, height: h });
+            return h;
+        }
+        function padFactor(x, z) {
+            let f = 0, targetH = 0;
+            for (const p of featurePads) {
+                const d = Math.hypot(x - p.x, z - p.z);
+                const t = 1 - THREE.MathUtils.clamp((d - p.radius * 0.55) / (p.radius * 0.45), 0, 1);
+                if (t > f) { f = t; targetH = p.height; }
+            }
+            return { f, targetH };
+        }
+        function terrainHeight(x, z) {
+            let h = rawHills(x, z);
+            const road = roadFactor(x, z);
+            if (road > 0) h = THREE.MathUtils.lerp(h, rawHillsSmooth(x, z), road * 0.9);
+            const pad = padFactor(x, z);
+            if (pad.f > 0) h = THREE.MathUtils.lerp(h, pad.targetH, pad.f);
+            const canyon = canyonFactor(x, z);
+            if (canyon.f > 0) h -= canyon.f * canyon.depth;
+            return h;
+        }
+        function terrainColor(x, z, h) {
+            const grass = new THREE.Color(0x4b7a3a);
+            const rock = new THREE.Color(0x8a7256);
+            const elevT = THREE.MathUtils.clamp((h + 2) / 8, 0, 1);
+            const base = grass.clone().lerp(rock, elevT);
+            const road = new THREE.Color(0xC9A876);
+            base.lerp(road, roadFactor(x, z));
+            const mud = new THREE.Color(0x3b2a1a);
+            base.lerp(mud, mudFactor(x, z) * 0.85);
+            const canyon = canyonFactor(x, z);
+            if (canyon.f > 0) base.lerp(new THREE.Color(0x6b5233), canyon.f * 0.7);
+            return base;
+        }
+
+        // ============================================================
+        //  INFINITE TERRAIN — streamed in square chunks around the bike.
+        // ============================================================
+        const CHUNK_SIZE = 300;
+        const CHUNK_SEG = 30;
+        const CHUNK_RADIUS = 2; // 5x5 grid of chunks always loaded around the player
+        const terrainMaterial = new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 1.0 });
+        const loadedChunks = new Map();
+        const featureMeshes = [];
+        let trackMeshes = [];
+
+        function chunkKey(cx, cz) { return cx + ',' + cz; }
+
+        function buildChunkMesh(cx, cz) {
+            const originX = cx * CHUNK_SIZE;
+            const originZ = cz * CHUNK_SIZE;
+            const geo = new THREE.PlaneGeometry(CHUNK_SIZE, CHUNK_SIZE, CHUNK_SEG, CHUNK_SEG);
+            const pos = geo.attributes.position;
+            const colors = [];
+            for (let i = 0; i < pos.count; i++) {
+                const vx = pos.getX(i);
+                const vy = pos.getY(i);
+                const worldX = vx + originX;
+                const worldZ = -vy + originZ;
+                const h = terrainHeight(worldX, worldZ);
+                pos.setZ(i, h);
+                const c = terrainColor(worldX, worldZ, h);
+                colors.push(c.r, c.g, c.b);
+            }
+            geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            geo.computeVertexNormals();
+            const mesh = new THREE.Mesh(geo, terrainMaterial);
+            mesh.rotation.x = -Math.PI / 2;
+            mesh.position.set(originX, 0, originZ);
+            mesh.receiveShadow = true;
+            scene.add(mesh);
+            return mesh;
+        }
+
+        function updateChunks(px, pz) {
+            const ccx = Math.round(px / CHUNK_SIZE);
+            const ccz = Math.round(pz / CHUNK_SIZE);
+            const needed = new Set();
+            for (let dx = -CHUNK_RADIUS; dx <= CHUNK_RADIUS; dx++) {
+                for (let dz = -CHUNK_RADIUS; dz <= CHUNK_RADIUS; dz++) {
+                    const cx = ccx + dx, cz = ccz + dz;
+                    const key = chunkKey(cx, cz);
+                    needed.add(key);
+                    if (!loadedChunks.has(key)) {
+                        maybeSpawnChunkFeature(cx, cz);
+                        loadedChunks.set(key, buildChunkMesh(cx, cz));
+                    }
+                }
+            }
+            for (const key of Array.from(loadedChunks.keys())) {
+                if (!needed.has(key)) {
+                    const mesh = loadedChunks.get(key);
+                    scene.remove(mesh);
+                    mesh.geometry.dispose();
+                    loadedChunks.delete(key);
+                }
+            }
+            trackMeshes = [...loadedChunks.values(), ...featureMeshes];
+        }
+
+        // Deterministic pseudo-random per integer pair, so a given chunk always rolls the same way.
+        function hashSeed(a, b) {
+            let h = (a * 374761393 + b * 668265263) | 0;
+            h = (h ^ (h >>> 13)) * 1274126177;
+            h = (h ^ (h >>> 16)) >>> 0;
+            return h / 4294967296;
+        }
+
+        // Procedurally scatter jumps into chunks as they're first generated, so riding in any one
+        // direction for a while keeps turning up new jumps instead of running dry. Capped so a very
+        // long session doesn't accumulate an unbounded number of ramps.
+        let proceduralSpawnCount = 0;
+        const MAX_PROCEDURAL_JUMPS = 90;
+        function maybeSpawnChunkFeature(cx, cz) {
+            if (proceduralSpawnCount >= MAX_PROCEDURAL_JUMPS) return;
+            const centerX = cx * CHUNK_SIZE, centerZ = cz * CHUNK_SIZE;
+            if (Math.hypot(centerX, centerZ) < WORLD_FEATURE_RADIUS + CHUNK_SIZE * 0.5) return; // skip the curated park
+
+            if (hashSeed(cx, cz) > 0.45) return; // ~45% of eligible chunks get something
+
+            const typeRoll = hashSeed(cx * 3 + 7, cz * 5 + 11);
+            const posRollX = hashSeed(cx * 13 + 1, cz * 17 + 3);
+            const posRollZ = hashSeed(cx * 19 + 5, cz * 23 + 9);
+            const rotRoll = hashSeed(cx * 29 + 2, cz * 31 + 4);
+
+            const margin = 60;
+            const px = centerX - CHUNK_SIZE / 2 + margin + posRollX * (CHUNK_SIZE - margin * 2);
+            const pz = centerZ - CHUNK_SIZE / 2 + margin + posRollZ * (CHUNK_SIZE - margin * 2);
+            const rotY = rotRoll * Math.PI * 2;
+
+            if (typeRoll < 0.4) {
+                const baseY = registerPad(px, pz, 16);
+                createWedgeRamp(px, pz, 14, 4 + posRollX * 3, 9, 2.4, false, rotY, baseY);
+            } else if (typeRoll < 0.65) {
+                const baseY = registerPad(px, pz, 20);
+                createTabletop(px, pz, 16, 5, 10, 14, rotY, baseY);
+            } else if (typeRoll < 0.85) {
+                const baseY = registerPad(px, pz, 14);
+                createQuarterPipe(px, pz, 11, rotY, baseY);
+            } else {
+                const baseY = registerPad(px, pz, 16);
+                createSpineJump(px, pz, 12, 5, 10, rotY, baseY);
+            }
+            proceduralSpawnCount++;
+        }
+
+        // ============================================================
+        //  JUMPS & TERRAIN FEATURES — several distinct types
+        // ============================================================
+        const jumpZones = [];
+
+        function createHazardTexture() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256; canvas.height = 256;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffcc00'; ctx.fillRect(0,0,256,256);
+            ctx.fillStyle = '#111111';
+            for(let i=-256; i<512; i+=64) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i+32, 0);
+                ctx.lineTo(i+32+256, 256); ctx.lineTo(i+256, 256); ctx.fill();
+            }
+            const tex = new THREE.CanvasTexture(canvas);
+            tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+            tex.repeat.set(4, 0.2);
+            return tex;
+        }
+        const hazardMat = new THREE.MeshBasicMaterial({ map: createHazardTexture() });
+
+        // Type 1: wedge ramp — the classic single launch ramp.
+        function createWedgeRamp(x, z, width, height, length, boostMult = 2.5, isLanding = false, rotY = 0, baseY = 0, rampColor = 0x999999) {
+            const slopeLen = Math.sqrt(height * height + length * length);
+            const angle = Math.atan2(height, length);
+            const thickness = 2.0;
+
+            const geo = new THREE.BoxGeometry(width, thickness, slopeLen);
+            const mat = new THREE.MeshStandardMaterial({ color: rampColor, roughness: 0.9 });
+            const mesh = new THREE.Mesh(geo, mat);
+
+            mesh.position.set(x, height / 2 - (thickness / 2) * Math.cos(angle) + baseY, z);
+            mesh.rotation.y = rotY;
+            mesh.rotation.x = isLanding ? -angle : angle;
+            mesh.castShadow = true; mesh.receiveShadow = true;
+            scene.add(mesh);
+            featureMeshes.push(mesh);
+
+            const shape = new CANNON.Box(new CANNON.Vec3(width / 2, thickness / 2, slopeLen / 2));
+            const body = new CANNON.Body({ mass: 0, material: groundMat });
+            body.addShape(shape);
+            body.position.copy(mesh.position);
+            body.quaternion.copy(mesh.quaternion);
+            world.addBody(body);
+
+            if (!isLanding && boostMult > 0) {
+                jumpZones.push({ x, z, width, length, height, boostMult });
+                const lipMesh = new THREE.Mesh(new THREE.BoxGeometry(width, 0.4, 1), hazardMat);
+                lipMesh.position.set(x, height - 0.2 + baseY, z - length / 2 + 0.5);
+                scene.add(lipMesh);
+            }
+        }
+
+        // Type 2: tabletop — ramp up, flat top, ramp back down.
+        function createTabletop(x, z, width, height, rampLen, flatLen, rotY = 0, baseY = 0) {
+            const topMesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, flatLen), new THREE.MeshStandardMaterial({ color: 0xb8860b, roughness: 0.9 }));
+            topMesh.position.set(x, height / 2 + baseY, z);
+            topMesh.rotation.y = rotY;
+            topMesh.castShadow = true; topMesh.receiveShadow = true;
+            scene.add(topMesh);
+            featureMeshes.push(topMesh);
+
+            const topBody = new CANNON.Body({ mass: 0, material: groundMat });
+            topBody.addShape(new CANNON.Box(new CANNON.Vec3(width / 2, height / 2, flatLen / 2)));
+            topBody.position.set(x, height / 2 + baseY, z);
+            topBody.quaternion.copy(topMesh.quaternion);
+            world.addBody(topBody);
+
+            createWedgeRamp(x, z + (flatLen / 2) + (rampLen / 2), width, height, rampLen, 1.8, false, rotY, baseY);
+            createWedgeRamp(x, z - (flatLen / 2) - (rampLen / 2), width, height, rampLen, 0, true, rotY, baseY);
+        }
+
+        // Type 3: whoops — a row of rolling bumps.
+        function createWhoops(x, zStart, count, height, spacing, baseY = 0) {
+            for (let i = 0; i < count; i++) {
+                const zPos = zStart - (i * spacing);
+                const bumpMesh = new THREE.Mesh(new THREE.CylinderGeometry(height, height, 16, 16), new THREE.MeshStandardMaterial({ color: 0x8b4513, roughness: 0.9 }));
+                bumpMesh.rotation.z = Math.PI / 2;
+                bumpMesh.position.set(x, baseY, zPos);
+                bumpMesh.castShadow = true;
+                scene.add(bumpMesh);
+                featureMeshes.push(bumpMesh);
+
+                const bumpBody = new CANNON.Body({ mass: 0, material: groundMat });
+                bumpBody.addShape(new CANNON.Cylinder(height, height, 16, 16));
+                bumpBody.quaternion.setFromAxisAngle(new CANNON.Vec3(0, 0, 1), Math.PI / 2);
+                bumpBody.position.set(x, baseY, zPos);
+                world.addBody(bumpBody);
+            }
+        }
+
+        // Type 4: spine / hip jump — two ramps meeting at a shared peak. Launch off either side.
+        function createSpineJump(x, z, width, height, rampLen, rotY = 0, baseY = 0) {
+            createTabletop(x, z, width, height, rampLen, 1, rotY, baseY);
+        }
+
+        // Type 5: mesa cliff-drop — an artificially raised, flattened piece of terrain (no separate
+        // mesh needed, the terrain itself forms the ramp and the slope down). Ride up the natural
+        // slope and launch off the far edge into big air. A hazard-striped marker flags the lip.
+        function createMesaDrop(x, z, lipZOffset, rotY = 0) {
+            const lipMesh = new THREE.Mesh(new THREE.BoxGeometry(16, 0.4, 1), hazardMat);
+            lipMesh.position.set(x, terrainHeight(x, z) + 0.3, z + lipZOffset);
+            lipMesh.rotation.y = rotY;
+            scene.add(lipMesh);
+        }
+
+        // Type 6: step-up plateau — ramp up onto a raised platform with an open ledge at the far end.
+        // No ramp down: riders choose to send it off the edge for extra air.
+        function createStepUpPlateau(x, z, width, height, rampLen, plateauLen, rotY = 0, baseY = 0) {
+            const topMesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, plateauLen), new THREE.MeshStandardMaterial({ color: 0xc48a3a, roughness: 0.9 }));
+            topMesh.position.set(x, height / 2 + baseY, z);
+            topMesh.rotation.y = rotY;
+            topMesh.castShadow = true; topMesh.receiveShadow = true;
+            scene.add(topMesh);
+            featureMeshes.push(topMesh);
+
+            const topBody = new CANNON.Body({ mass: 0, material: groundMat });
+            topBody.addShape(new CANNON.Box(new CANNON.Vec3(width / 2, height / 2, plateauLen / 2)));
+            topBody.position.copy(topMesh.position);
+            topBody.quaternion.copy(topMesh.quaternion);
+            world.addBody(topBody);
+
+            createWedgeRamp(x, z + (plateauLen / 2) + (rampLen / 2), width, height, rampLen, 2.0, false, rotY, baseY, 0xc48a3a);
+        }
+
+        // Type 7: canyon gap jump — a real dip carved into the terrain (see canyons[]) with a
+        // launch ramp on the near rim and a landing ramp on the far rim. Come up short and you
+        // simply ride down into the valley and back up — no instant fail.
+        function createCanyonRamps(nearX, farX, z, width, baseYNear, baseYFar) {
+            createWedgeRamp(nearX, z, width, 5, 10, 2.8, false, Math.PI / 2, baseYNear, 0xdd4422);
+            createWedgeRamp(farX, z, width, 5, 10, 0, true, Math.PI / 2, baseYFar, 0xdd4422);
+        }
+
+        // Type 8: quarter-pipe — a single steep, tall ramp for big vertical air rather than distance.
+        function createQuarterPipe(x, z, width, rotY = 0, baseY = 0) {
+            createWedgeRamp(x, z, width, 9, 6, 4.2, false, rotY, baseY, 0x3378dd);
+        }
+
+        // --- Register flat pads for every set-piece BEFORE building terrain chunks ---
+        const padTabletop1  = registerPad(120, 60, 20);
+        const padTripleA    = registerPad(-150, -97, 22);
+        const padWhoopsA    = registerPad(210, -180, 26);
+        const padSpine      = registerPad(-250, 140, 18);
+        const padStepUpA    = registerPad(300, 220, 22);
+        const padWhoopsB    = registerPad(-100, 300, 26);
+        const padTabletop2  = registerPad(-300, -220, 22);
+        const padTripleB    = registerPad(150, -300, 22);
+        const padMesa       = registerPad(0, -350, 26, 5);
+        const padStepUpB    = registerPad(-380, 60, 22);
+        const padPlateau    = registerPad(-200, -60, 20);
+        const padQuarterPipe = registerPad(250, 40, 14);
+        const padCanyonNear = registerPad(54, -100, 16);
+        const padCanyonFar  = registerPad(106, -100, 16);
+
+        // --- Build the actual features (independent of the terrain mesh; only needs the pads above) ---
+        createTabletop(120, 60, 18, 6, 14, 22, 0, padTabletop1);
+        createWedgeRamp(-150, -85, 14, 2.5, 8, 1.5, false, 0, padTripleA);
+        createWedgeRamp(-150, -100, 14, 2.5, 8, 1.5, false, 0, padTripleA);
+        createWedgeRamp(-150, -115, 14, 2.5, 8, 1.5, false, 0, padTripleA);
+        createWhoops(210, -160, 6, 1.0, 6, padWhoopsA);
+        createSpineJump(-250, 140, 14, 6, 12, 0, padSpine);
+        createWedgeRamp(300, 220, 18, 10, 20, 3.2, false, 0.6, padStepUpA);
+        createWhoops(-100, 320, 6, 0.8, 6, padWhoopsB);
+        createTabletop(-300, -220, 18, 6, 14, 20, 0.9, padTabletop2);
+        createWedgeRamp(150, -285, 16, 4, 12, 2.5, false, -0.4, padTripleB);
+        createWedgeRamp(150, -300, 16, 4, 12, 2.5, false, -0.4, padTripleB);
+        createWedgeRamp(150, -315, 16, 4, 12, 2.5, false, -0.4, padTripleB);
+        createMesaDrop(0, -350, 13, 0);
+        createWedgeRamp(-380, 60, 20, 11, 24, 3.0, false, 1.6, padStepUpB);
+        createStepUpPlateau(-200, -60, 16, 7, 12, 16, 0, padPlateau);
+        createQuarterPipe(250, 40, 12, 0, padQuarterPipe);
+        createCanyonRamps(54, 106, -100, 14, padCanyonNear, padCanyonFar);
+
+        // --- Scenery ---
+        function createTree(x, z) {
+            const y = terrainHeight(x, z);
+            const trunk = new THREE.Mesh(
+                new THREE.CylinderGeometry(0.3, 0.4, 3, 6),
+                new THREE.MeshStandardMaterial({ color: 0x5a3d22, roughness: 1 })
+            );
+            trunk.position.set(x, y + 1.5, z);
+            const leaves = new THREE.Mesh(
+                new THREE.ConeGeometry(2.2 + Math.random()*0.6, 5 + Math.random()*1.5, 7),
+                new THREE.MeshStandardMaterial({ color: 0x2f5d34, roughness: 1 })
+            );
+            leaves.position.set(x, y + 5.2, z);
+            scene.add(trunk, leaves);
+        }
+        let treesPlaced = 0, treeAttempts = 0;
+        while (treesPlaced < 90 && treeAttempts < 400) {
+            treeAttempts++;
+            const x = (Math.random() * 2 - 1) * (WORLD_FEATURE_RADIUS - 20);
+            const z = (Math.random() * 2 - 1) * (WORLD_FEATURE_RADIUS - 20);
+            if (roadFactor(x, z) > 0.4) continue;
+            if (padFactor(x, z).f > 0.25) continue;
+            if (canyonFactor(x, z).f > 0.15) continue;
+            createTree(x, z);
+            treesPlaced++;
+        }
+
+        // --- Checkpoints ---
+        const CHECKPOINT_SPOTS = [
+            [60, 40], [-120, -60], [250, 140], [-280, 60], [180, -230],
+            [-60, 280], [320, -260], [-340, -180], [80, -350], [-200, 220],
+            [350, 320], [-350, 320]
+        ];
+        const checkpoints = [];
+        const ringMat = new THREE.MeshBasicMaterial({ color: 0xffdd00 });
+        const beamMat = new THREE.MeshBasicMaterial({ color: 0xffdd00, transparent: true, opacity: 0.25, side: THREE.DoubleSide });
+        for (const [x, z] of CHECKPOINT_SPOTS) {
+            const y = terrainHeight(x, z);
+            const ring = new THREE.Mesh(new THREE.TorusGeometry(2.6, 0.35, 10, 24), ringMat);
+            ring.position.set(x, y + 3, z);
+            ring.rotation.x = Math.PI / 2;
+            scene.add(ring);
+            const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 14, 6), beamMat);
+            beam.position.set(x, y + 7, z);
+            scene.add(beam);
+            checkpoints.push({ x, z, mesh: ring, beam, collected: false });
+        }
+        cpTotalEl.textContent = checkpoints.length;
+        let collectedCount = 0;
+        function updateCheckpointHud() {
+            cpCurrentEl.textContent = collectedCount;
+        }
+        let toastTimeout = null;
+        function showAllFoundToast() {
+            toast.classList.add('show');
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => toast.classList.remove('show'), 4200);
+        }
+
+        // --- Trick scoring ---
+        let score = 0;
+        let trickToastTimeout = null;
+        function awardTrick(label, points) {
+            if (points <= 0) return;
+            score += points;
+            scoreEl.textContent = score;
+            trickToast.textContent = label + '  +' + points;
+            trickToast.classList.remove('show');
+            void trickToast.offsetWidth; // restart the pop-in animation if a trick lands back-to-back
+            trickToast.classList.add('show');
+            if (trickToastTimeout) clearTimeout(trickToastTimeout);
+            trickToastTimeout = setTimeout(() => trickToast.classList.remove('show'), 1800);
+        }
+
+        // --- Build the starting ring of terrain chunks now that all pads + features exist ---
+        updateChunks(0, 0);
+
+        // ============================================================
+        //  BIKE + RIDER
+        // ============================================================
+        const bikeBody = new CANNON.Body({ mass: 120, material: bikeMat, fixedRotation: true });
+        bikeBody.addShape(new CANNON.Sphere(BIKE_RADIUS));
+        bikeBody.position.set(0, terrainHeight(0, 0) + 2, 0);
+        bikeBody.linearDamping = 0.05;
+        world.addBody(bikeBody);
+
+        const bikeGroup = new THREE.Group();
+        const chassisGroup = new THREE.Group();
+        bikeGroup.add(chassisGroup);
+
+        const paintMat = new THREE.MeshPhysicalMaterial({ color: 0x00ffcc, metalness: 0.6, roughness: 0.1, clearcoat: 1.0 });
+        const chromeMat = new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 1.0, roughness: 0.2 });
+        const darkMetalMat = new THREE.MeshStandardMaterial({ color: 0x222222, metalness: 0.8, roughness: 0.6 });
+        const rubberMat = new THREE.MeshStandardMaterial({ color: 0x0a0a0a, roughness: 0.9 });
+
+        const tank = new THREE.Mesh(new THREE.BoxGeometry(0.4, 0.4, 1.0), paintMat);
+        tank.position.set(0, 0.4, 0); tank.rotation.x = 0.2; tank.castShadow = true;
+        chassisGroup.add(tank);
+
+        const seat = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.15, 0.8), darkMetalMat);
+        seat.position.set(0, 0.45, 0.7); seat.rotation.x = -0.1;
+        chassisGroup.add(seat);
+
+        const engineMesh = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.5, 0.6), darkMetalMat);
+        engineMesh.position.set(0, 0.0, 0.2); engineMesh.castShadow = true;
+        chassisGroup.add(engineMesh);
+
+        const exhaust = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.2, 16), chromeMat);
+        exhaust.rotation.x = Math.PI / 2; exhaust.position.set(0.2, 0.1, 0.7);
+        chassisGroup.add(exhaust);
+
+        const forkGeo = new THREE.CylinderGeometry(0.04, 0.04, 1.2, 16);
+        const leftFork = new THREE.Mesh(forkGeo, chromeMat);
+        leftFork.position.set(-0.2, 0.1, -0.6); leftFork.rotation.x = -0.3;
+        chassisGroup.add(leftFork);
+        const rightFork = leftFork.clone();
+        rightFork.position.set(0.2, 0.1, -0.6);
+        chassisGroup.add(rightFork);
+
+        const shockGeo = new THREE.CylinderGeometry(0.045, 0.045, 0.55, 10);
+        const shockSpringMat = new THREE.MeshStandardMaterial({ color: 0xff5500, metalness: 0.5, roughness: 0.4 });
+        const rearShock = new THREE.Mesh(shockGeo, shockSpringMat);
+        rearShock.position.set(0, 0.3, 0.55); rearShock.rotation.x = 0.5;
+        chassisGroup.add(rearShock);
+
+        const bars = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 1.0, 16), darkMetalMat);
+        bars.rotation.z = Math.PI / 2; bars.position.set(0, 0.7, -0.4);
+        chassisGroup.add(bars);
+
+        function createWheel() {
+            const wheelGrp = new THREE.Group();
+            const tire = new THREE.Mesh(new THREE.TorusGeometry(0.35, 0.12, 16, 40), rubberMat);
+            tire.rotation.y = Math.PI / 2; tire.castShadow = true;
+            const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.18, 24), chromeMat);
+            rim.rotation.z = Math.PI / 2; rim.castShadow = true;
+            wheelGrp.add(tire); wheelGrp.add(rim);
+            return wheelGrp;
+        }
+
+        const frontWheel = createWheel();
+        frontWheel.position.set(0, -0.25, -0.85);
+        bikeGroup.add(frontWheel);
+
+        const backWheel = createWheel();
+        backWheel.position.set(0, -0.25, 0.85);
+        bikeGroup.add(backWheel);
+
+        // --- Rider ---
+        const jerseyMat = new THREE.MeshStandardMaterial({ color: 0xff5500, roughness: 0.7 });
+        const gearMat = new THREE.MeshStandardMaterial({ color: 0x1a1a1a, roughness: 0.6 });
+        const helmetMat = new THREE.MeshStandardMaterial({ color: 0x00ffcc, metalness: 0.3, roughness: 0.3 });
+
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.5, 0.3), jerseyMat);
+        torso.position.set(0, 0.9, 0.5); torso.rotation.x = 0.55; torso.castShadow = true;
+        chassisGroup.add(torso);
+
+        const head = new THREE.Mesh(new THREE.SphereGeometry(0.17, 12, 12), helmetMat);
+        head.position.set(0, 1.28, 0.12); head.castShadow = true;
+        chassisGroup.add(head);
+
+        const visor = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.08, 0.05), gearMat);
+        visor.position.set(0, 1.25, -0.02);
+        chassisGroup.add(visor);
+
+        const armGeo = new THREE.CylinderGeometry(0.055, 0.055, 0.5, 8);
+        const leftArm = new THREE.Mesh(armGeo, gearMat);
+        leftArm.position.set(-0.24, 0.98, 0.0); leftArm.rotation.x = 1.05; leftArm.rotation.z = 0.15;
+        chassisGroup.add(leftArm);
+        const rightArm = leftArm.clone();
+        rightArm.position.set(0.24, 0.98, 0.0); rightArm.rotation.z = -0.15;
+        chassisGroup.add(rightArm);
+
+        const legGeo = new THREE.CylinderGeometry(0.065, 0.065, 0.55, 8);
+        const leftLeg = new THREE.Mesh(legGeo, jerseyMat);
+        leftLeg.position.set(-0.19, 0.32, 0.55); leftLeg.rotation.x = 0.35;
+        chassisGroup.add(leftLeg);
+        const rightLeg = leftLeg.clone();
+        rightLeg.position.set(0.19, 0.32, 0.55);
+        chassisGroup.add(rightLeg);
+
+        scene.add(bikeGroup);
+
+        // --- Skid marks ---
+        const maxSkidMarks = 600;
+        let skidIndex = 0;
+        const skidGeo = new THREE.BoxGeometry(0.18, 0.004, 0.25);
+        const skidMat = new THREE.MeshBasicMaterial({
+            color: 0x050505, transparent: true, opacity: 0.9, side: THREE.DoubleSide,
+            depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4
+        });
+        const skidMarks = [];
+        for(let i = 0; i < maxSkidMarks; i++) {
+            const mark = new THREE.Mesh(skidGeo, skidMat);
+            mark.visible = false;
+            mark.frustumCulled = false;
+            scene.add(mark);
+            skidMarks.push(mark);
+        }
+
+        // --- Audio ---
+        let audioCtx = null, engineOsc = null, engineGain = null, engineFilter = null;
+        function initAudio() {
+            if (audioCtx) return;
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                engineOsc = audioCtx.createOscillator();
+                engineOsc.type = 'sawtooth';
+                engineFilter = audioCtx.createBiquadFilter();
+                engineFilter.type = 'lowpass';
+                engineFilter.frequency.value = 900;
+                engineGain = audioCtx.createGain();
+                engineGain.gain.value = 0.0;
+                engineOsc.connect(engineFilter).connect(engineGain).connect(audioCtx.destination);
+                engineOsc.frequency.value = 55;
+                engineOsc.start();
+            } catch (e) { /* audio unavailable, game still works */ }
+        }
+        function playLandThud(strength) {
+            if (!audioCtx) return;
+            const bufferSize = Math.floor(audioCtx.sampleRate * 0.15);
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = (Math.random() * 2 - 1) * (1 - i / bufferSize);
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+            const gain = audioCtx.createGain();
+            gain.gain.value = Math.min(0.5, strength * 0.035);
+            noise.connect(gain).connect(audioCtx.destination);
+            noise.start();
+        }
+        function playChime() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            osc.type = 'sine';
+            const gain = audioCtx.createGain();
+            gain.gain.value = 0.15;
+            osc.frequency.value = 880;
+            osc.connect(gain).connect(audioCtx.destination);
+            osc.start();
+            osc.frequency.exponentialRampToValueAtTime(1760, audioCtx.currentTime + 0.15);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+            osc.stop(audioCtx.currentTime + 0.32);
+        }
+
+        // ============================================================
+        //  STATE
+        // ============================================================
+        let currentAngle = 0;
+        let wheelieAngle = 0;
+        let wheelieAngVel = 0;
+        let speed = 0;
+        let prevSpeed = 0;
+        let squatAngle = 0;
+        let leanAngle = 0;
+        let isGrounded = false;
+        let wasGrounded = true;
+        let lastVelocityY = 0;
+        let lastSkidPos = new THREE.Vector3(0,-1000,0);
+        let shakeTime = 0;
+
+        // Independent front/rear suspension — deliberately loose and bouncy.
+        let frontSusp = 0, frontSuspVel = 0;
+        let rearSusp = 0, rearSuspVel = 0;
+        let frontBottomed = false, rearBottomed = false;
+        const SUSP_STIFF = 65;
+        const SUSP_DAMP = 2.6;
+        const SUSP_MIN = -0.95, SUSP_MAX = 0.45;
+        const SUSP_VISUAL_AMP = 1.5;
+
+        // Trick tracking
+        let wheelieTimer = 0, stoppieTimer = 0;
+        let airTimer = 0, airStartAngle = 0;
+        const WHEELIE_TRICK_THRESHOLD = 0.28;
+        const STOPPIE_TRICK_THRESHOLD = 0.14;
+
+        let MAX_SPEED = 70, ACCEL = 45, TURN_RATE = 2.5, WHEELIE_RATE = 2.0, WHEELIE_MAX = 0.6;
+
+        function popSuspension(strength) {
+            frontSuspVel += strength * 0.75;
+            rearSuspVel += strength;
+        }
+
+        function resetBike() {
+            const spawnY = terrainHeight(bikeBody.position.x, bikeBody.position.z) + 3;
+            bikeBody.position.y = spawnY;
+            bikeBody.velocity.set(0, 0, 0);
+            speed = 0; wheelieAngle = 0; wheelieAngVel = 0;
+            frontSusp = 0; frontSuspVel = 0;
+            rearSusp = 0; rearSuspVel = 0;
+            prevSpeed = 0; squatAngle = 0; leanAngle = 0;
+            wheelieTimer = 0; stoppieTimer = 0; airTimer = 0; airStartAngle = 0;
+        }
+
+        const raycaster = new THREE.Raycaster();
+        const downVector = new THREE.Vector3(0, -1, 0);
+
+        function checkGrounding() {
+            for (let i = 0; i < world.contacts.length; i++) {
+                if (world.contacts[i].bi === bikeBody || world.contacts[i].bj === bikeBody) return true;
+            }
+            raycaster.set(bikeGroup.position, downVector);
+            const intersects = raycaster.intersectObjects(trackMeshes);
+            return intersects.length > 0 && intersects[0].distance < 1.35;
+        }
+
+        // ============================================================
+        //  INPUT
+        // ============================================================
+        const keys = {};
+        window.addEventListener('keydown', e => {
+            if(!gameActive) return;
+            const k = e.key.toLowerCase();
+            if (k === 'pageup' || k === 'pagedown' || e.key === ' ') e.preventDefault();
+            keys[k] = true;
+            if (e.key === ' ' && isGrounded) {
+                bikeBody.velocity.y = 13;
+                popSuspension(2.6);
+            }
+        });
+        window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+        function bindTouch(id, key) {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const press = ev => { ev.preventDefault(); keys[key] = true; el.classList.add('active'); };
+            const release = ev => { ev.preventDefault(); keys[key] = false; el.classList.remove('active'); };
+            el.addEventListener('touchstart', press);
+            el.addEventListener('touchend', release);
+            el.addEventListener('touchcancel', release);
+        }
+        bindTouch('t-left', 'a');
+        bindTouch('t-right', 'd');
+        bindTouch('t-gas', 'w');
+        bindTouch('t-brake', 's');
+        bindTouch('t-wheelie-up', 'q');
+        bindTouch('t-wheelie-down', 'e');
+        const jumpBtn = document.getElementById('t-jump');
+        if (jumpBtn) {
+            jumpBtn.addEventListener('touchstart', ev => {
+                ev.preventDefault();
+                if (gameActive && isGrounded) { bikeBody.velocity.y = 13; popSuspension(2.6); }
+            });
+        }
+
+        startBtn.addEventListener('click', () => {
+            const bike = BIKES[selectedBikeIdx];
+            MAX_SPEED = bike.maxSpeed; ACCEL = bike.accel; TURN_RATE = bike.turnRate;
+            WHEELIE_RATE = bike.wheelieRate; WHEELIE_MAX = bike.wheelieMax;
+            paintMat.color.setHex(bike.color);
+            jerseyMat.color.setHex(bike.color);
+            helmetMat.color.setHex(bike.color);
+
+            initAudio();
+            startScreen.style.opacity = 0;
+            setTimeout(() => {
+                startScreen.style.display = 'none';
+                hudContainer.style.display = 'block';
+                gameActive = true;
+            }, 500);
+        });
+
+        const speedText = document.getElementById('speed-text');
+        const rpmBar = document.getElementById('rpm-bar');
+        let clock = new THREE.Clock();
+        let lastChunkKey = null;
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = Math.min(clock.getDelta(), 0.1);
+
+            world.step(1 / 60, delta, 3);
+
+            // Kinematic collision against the open hill terrain (jumps/ramps use real Cannon bodies above).
+            const groundY = terrainHeight(bikeBody.position.x, bikeBody.position.z);
+            if (bikeBody.position.y - BIKE_RADIUS < groundY) {
+                bikeBody.position.y = groundY + BIKE_RADIUS;
+                if (bikeBody.velocity.y < 0) bikeBody.velocity.y = 0;
+            }
+
+            // Stream terrain chunks in around the bike so the map never runs out.
+            const ccx = Math.round(bikeBody.position.x / CHUNK_SIZE);
+            const ccz = Math.round(bikeBody.position.z / CHUNK_SIZE);
+            const ck = ccx + ',' + ccz;
+            if (ck !== lastChunkKey) {
+                lastChunkKey = ck;
+                updateChunks(bikeBody.position.x, bikeBody.position.z);
+            }
+
+            if (gameActive) {
+                if (keys['r']) resetBike();
+
+                isGrounded = checkGrounding();
+
+                if (isGrounded) {
+                    airIndicator.style.display = "none";
+
+                    if (!wasGrounded) {
+                        // Just landed — score any air trick before wheelieAngle gets wrapped below.
+                        const totalRotation = wheelieAngle - airStartAngle;
+                        const flips = Math.floor(Math.abs(totalRotation) / (Math.PI * 2) + 0.02);
+                        if (flips >= 1) {
+                            const dir = totalRotation > 0 ? 'BACKFLIP' : 'FRONTFLIP';
+                            awardTrick((flips > 1 ? flips + 'X ' : '') + dir + '!', flips * 50);
+                        } else if (airTimer > 0.6) {
+                            awardTrick(airTimer.toFixed(1) + ' SECOND AIR', Math.round(airTimer * 10));
+                        }
+                    }
+
+                    if (!wasGrounded && lastVelocityY < -12) {
+                        playLandThud(Math.abs(lastVelocityY));
+                        shakeTime = Math.min(0.3, Math.abs(lastVelocityY) * 0.012);
+                        frontSuspVel -= Math.abs(lastVelocityY) * 0.05;
+                        rearSuspVel -= Math.abs(lastVelocityY) * 0.08;
+                    }
+
+                    const mud = mudFactor(bikeBody.position.x, bikeBody.position.z);
+                    const localMaxSpeed = MAX_SPEED * (1 - mud * 0.45);
+                    const localAccel = ACCEL * (1 - mud * 0.35);
+
+                    const throttleOn = keys['w'] || keys['arrowup'];
+                    if (throttleOn) speed = Math.min(speed + localAccel * delta, localMaxSpeed);
+                    else if (keys['s'] || keys['arrowdown']) speed = Math.max(speed - localAccel * delta, -15);
+                    else speed *= 0.98;
+                    speed = Math.min(speed, localMaxSpeed);
+
+                    if (keys['a'] || keys['arrowleft']) currentAngle += TURN_RATE * delta;
+                    if (keys['d'] || keys['arrowright']) currentAngle -= TURN_RATE * delta;
+
+                    wheelieAngle = wheelieAngle % (Math.PI * 2);
+                    if (wheelieAngle > Math.PI) wheelieAngle -= Math.PI * 2;
+                    if (wheelieAngle < -Math.PI) wheelieAngle += Math.PI * 2;
+
+                    // Realistic-ish wheelie: a damped spring toward a target angle, so lifting the
+                    // front end has real weight and momentum instead of snapping straight to a pose.
+                    // Gas assists the lift (power wheelie); braking/E dives the nose (stoppie).
+                    const wheelieUp = keys['q'] || keys['pageup'];
+                    const wheelieDown = keys['e'] || keys['pagedown'];
+                    const speedFactor = THREE.MathUtils.clamp(Math.abs(speed) / (MAX_SPEED * 0.35), 0.3, 1.4);
+                    let wheelieTarget = 0;
+                    if (wheelieUp) wheelieTarget = WHEELIE_MAX;
+                    else if (wheelieDown) wheelieTarget = -WHEELIE_MAX * 0.5;
+                    const liftRate = WHEELIE_RATE * (0.6 + speedFactor * 0.7) * (throttleOn && wheelieUp ? 1.4 : 1.0);
+                    const wSpringK = liftRate * 3.2;
+                    const wDamp = 5.0;
+                    wheelieAngVel += (wSpringK * (wheelieTarget - wheelieAngle) - wDamp * wheelieAngVel) * delta;
+                    wheelieAngle += wheelieAngVel * delta;
+                    wheelieAngle = Math.max(-WHEELIE_MAX * 0.5, Math.min(WHEELIE_MAX, wheelieAngle));
+
+                    // Ground trick timers — wheelie / stoppie duration scoring.
+                    if (wheelieAngle > WHEELIE_TRICK_THRESHOLD) {
+                        wheelieTimer += delta;
+                        if (stoppieTimer > 0.7) awardTrick(stoppieTimer.toFixed(1) + ' SECOND STOPPIE', Math.round(stoppieTimer * 9));
+                        stoppieTimer = 0;
+                    } else if (wheelieAngle < -STOPPIE_TRICK_THRESHOLD) {
+                        stoppieTimer += delta;
+                        if (wheelieTimer > 1.0) awardTrick(wheelieTimer.toFixed(1) + ' SECOND WHEELIE', Math.round(wheelieTimer * 7));
+                        wheelieTimer = 0;
+                    } else {
+                        if (wheelieTimer > 1.0) awardTrick(wheelieTimer.toFixed(1) + ' SECOND WHEELIE', Math.round(wheelieTimer * 7));
+                        if (stoppieTimer > 0.7) awardTrick(stoppieTimer.toFixed(1) + ' SECOND STOPPIE', Math.round(stoppieTimer * 9));
+                        wheelieTimer = 0; stoppieTimer = 0;
+                    }
+
+                    const forwardX = -Math.sin(currentAngle);
+                    const forwardZ = -Math.cos(currentAngle);
+                    bikeBody.velocity.x = forwardX * speed;
+                    bikeBody.velocity.z = forwardZ * speed;
+
+                    const isBraking = (keys['s'] || keys['arrowdown']) && speed > 5;
+                    const isTurning = keys['a'] || keys['d'] || keys['arrowleft'] || keys['arrowright'];
+
+                    if (isBraking || (isTurning && speed > 18)) {
+                        const wheelPos = new THREE.Vector3();
+                        backWheel.getWorldPosition(wheelPos);
+
+                        if (wheelPos.distanceTo(lastSkidPos) > 0.18) {
+                            raycaster.set(wheelPos, downVector);
+                            const intersects = raycaster.intersectObjects(trackMeshes);
+
+                            if (intersects.length > 0 && intersects[0].distance < 1.2) {
+                                const hit = intersects[0];
+                                const mark = skidMarks[skidIndex];
+                                const normal = hit.face.normal.clone().transformDirection(hit.object.matrixWorld);
+
+                                mark.visible = true;
+                                mark.position.copy(hit.point).add(normal.clone().multiplyScalar(0.01));
+
+                                const bikeDir = new THREE.Vector3(-Math.sin(currentAngle), 0, -Math.cos(currentAngle));
+                                const tangent = bikeDir.clone().sub(normal.clone().multiplyScalar(bikeDir.dot(normal))).normalize();
+                                const bitangent = new THREE.Vector3().crossVectors(normal, tangent).normalize();
+
+                                const rotationMatrix = new THREE.Matrix4().makeBasis(bitangent, normal, tangent);
+                                mark.quaternion.setFromRotationMatrix(rotationMatrix);
+
+                                lastSkidPos.copy(wheelPos);
+                                skidIndex = (skidIndex + 1) % maxSkidMarks;
+                            }
+                        }
+                    }
+
+                } else {
+                    airIndicator.style.display = "block";
+                    if (wasGrounded) { airStartAngle = wheelieAngle; airTimer = 0; }
+                    airTimer += delta;
+                    speed *= 0.99;
+
+                    const wheelieUp = keys['q'] || keys['pageup'];
+                    const wheelieDown = keys['e'] || keys['pagedown'];
+                    if (wheelieUp) wheelieAngle += WHEELIE_RATE * 1.4 * delta;
+                    if (wheelieDown) wheelieAngle -= WHEELIE_RATE * 1.4 * delta;
+                    if (keys['a'] || keys['arrowleft']) currentAngle += 1.8 * delta;
+                    if (keys['d'] || keys['arrowright']) currentAngle -= 1.8 * delta;
+                }
+
+                // --- Weight transfer: hard gas lifts the nose, hard braking dives it ---
+                const frameAccel = delta > 0 ? (speed - prevSpeed) / delta : 0;
+                prevSpeed = speed;
+                const squatTarget = isGrounded ? THREE.MathUtils.clamp(frameAccel * 0.0035, -0.16, 0.16) : 0;
+                squatAngle = THREE.MathUtils.lerp(squatAngle, squatTarget, 0.1);
+
+                wasGrounded = isGrounded;
+                lastVelocityY = bikeBody.velocity.y;
+
+                jumpZones.forEach(ramp => {
+                    const inX = Math.abs(bikeBody.position.x - ramp.x) < ramp.width / 2;
+                    const inZ = Math.abs(bikeBody.position.z - ramp.z) < ramp.length / 2;
+                    if (inX && inZ && speed > 5) {
+                        const launchPower = (speed / MAX_SPEED) * (ramp.height * ramp.boostMult);
+                        if (bikeBody.velocity.y < launchPower) bikeBody.velocity.y = launchPower;
+                    }
+                });
+
+                // --- Independent front/rear suspension, terrain-reactive and deliberately bouncy ---
+                let frontTarget = 0, rearTarget = 0;
+                if (isGrounded) {
+                    const frontPos = new THREE.Vector3();
+                    const rearPos = new THREE.Vector3();
+                    frontWheel.getWorldPosition(frontPos);
+                    backWheel.getWorldPosition(rearPos);
+                    const centerGroundY = terrainHeight(bikeBody.position.x, bikeBody.position.z);
+                    frontTarget = -(terrainHeight(frontPos.x, frontPos.z) - centerGroundY) * 0.9;
+                    rearTarget = -(terrainHeight(rearPos.x, rearPos.z) - centerGroundY) * 0.9;
+                    // Weight shifts rearward during a wheelie, forward during a stoppie.
+                    rearTarget -= Math.max(0, wheelieAngle) * 0.35;
+                    frontTarget += Math.max(0, -wheelieAngle) * 0.35;
+                }
+                frontSuspVel += (-SUSP_STIFF * (frontSusp - frontTarget) - SUSP_DAMP * frontSuspVel) * delta;
+                frontSusp += frontSuspVel * delta;
+                frontSusp = Math.max(SUSP_MIN, Math.min(SUSP_MAX, frontSusp));
+
+                rearSuspVel += (-SUSP_STIFF * (rearSusp - rearTarget) - SUSP_DAMP * rearSuspVel) * delta;
+                rearSusp += rearSuspVel * delta;
+                rearSusp = Math.max(SUSP_MIN, Math.min(SUSP_MAX, rearSusp));
+
+                // Tactile feedback when a shock bottoms out.
+                const frontNowBottomed = frontSusp <= SUSP_MIN + 0.01;
+                if (frontNowBottomed && !frontBottomed) shakeTime = Math.max(shakeTime, 0.1);
+                frontBottomed = frontNowBottomed;
+                const rearNowBottomed = rearSusp <= SUSP_MIN + 0.01;
+                if (rearNowBottomed && !rearBottomed) {
+                    shakeTime = Math.max(shakeTime, 0.14);
+                    playLandThud(6);
+                }
+                rearBottomed = rearNowBottomed;
+
+                chassisGroup.position.y = (frontSusp + rearSusp) * 0.5 * SUSP_VISUAL_AMP;
+                leftFork.scale.y = 1.0 + frontSusp * 1.6;
+                rightFork.scale.y = 1.0 + frontSusp * 1.6;
+                rearShock.scale.y = 1.0 - rearSusp * 1.1;
+
+                const currentMPH = Math.abs(Math.round(speed * 2.237));
+                speedText.innerHTML = `${currentMPH} <span>MPH</span>`;
+
+                let speedPercent = (Math.abs(speed) / MAX_SPEED) * 100;
+                rpmBar.style.width = `${speedPercent}%`;
+
+                if(speedPercent > 85) {
+                    rpmBar.style.background = "#ff5500";
+                    rpmBar.style.boxShadow = "0 0 25px #ff5500";
+                } else {
+                    rpmBar.style.background = "linear-gradient(90deg, #00ffcc, #ff5500)";
+                    rpmBar.style.boxShadow = "0 0 15px #00ffcc";
+                }
+
+                if (engineOsc) {
+                    const throttle = (keys['w'] || keys['arrowup']) ? 1 : 0.35;
+                    const targetFreq = 55 + Math.abs(speed) * 5.5;
+                    engineOsc.frequency.value += (targetFreq - engineOsc.frequency.value) * 0.15;
+                    const targetGain = Math.min(0.11, 0.02 + (Math.abs(speed) / MAX_SPEED) * 0.09) * throttle;
+                    engineGain.gain.value += (targetGain - engineGain.gain.value) * 0.15;
+                }
+
+                for (const cp of checkpoints) {
+                    if (cp.collected) continue;
+                    cp.mesh.rotation.z += delta * 1.2;
+                    const dx = bikeBody.position.x - cp.x;
+                    const dz = bikeBody.position.z - cp.z;
+                    if (Math.hypot(dx, dz) < 7) {
+                        cp.collected = true;
+                        cp.mesh.visible = false;
+                        cp.beam.visible = false;
+                        collectedCount++;
+                        updateCheckpointHud();
+                        playChime();
+                        if (collectedCount === checkpoints.length) showAllFoundToast();
+                    }
+                }
+            }
+
+            if (shakeTime > 0) shakeTime -= delta;
+
+            bikeGroup.position.copy(bikeBody.position);
+            bikeGroup.rotation.y = currentAngle;
+            bikeGroup.rotation.x = wheelieAngle + (rearSusp - frontSusp) * 0.8 + squatAngle;
+
+            const speedLeanAmt = 0.2 + Math.min(1, Math.abs(speed) / MAX_SPEED) * 0.32;
+            let targetLean = 0;
+            if (keys['a'] || keys['arrowleft']) targetLean = -speedLeanAmt;
+            if (keys['d'] || keys['arrowright']) targetLean = speedLeanAmt;
+            leanAngle = THREE.MathUtils.lerp(leanAngle, targetLean, 0.12);
+            bikeGroup.rotation.z = leanAngle;
+
+            frontWheel.rotation.x += speed * 0.05;
+            backWheel.rotation.x += speed * 0.05;
+
+            const camOffset = new THREE.Vector3(
+                Math.sin(currentAngle) * 8.5,
+                4.8,
+                Math.cos(currentAngle) * 8.5
+            );
+            const speedOffset = speed * 0.08;
+            camOffset.x += Math.sin(currentAngle) * speedOffset;
+            camOffset.z += Math.cos(currentAngle) * speedOffset;
+
+            const camTargetPos = new THREE.Vector3().copy(bikeGroup.position).add(camOffset);
+            if (shakeTime > 0) {
+                camTargetPos.x += (Math.random() - 0.5) * shakeTime * 4;
+                camTargetPos.y += (Math.random() - 0.5) * shakeTime * 4;
+            }
+
+            camera.position.lerp(camTargetPos, 0.1);
+            camera.lookAt(bikeGroup.position.x, bikeGroup.position.y + 1, bikeGroup.position.z);
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>

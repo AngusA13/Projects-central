@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outback Ute Car Crash Simulator 3D - Closed Arena</title>
+    <!-- Tailwind CSS for HUD UI -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Three.js r128 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Teko:wght@600;700&family=Inter:wght@400;600;800&display=swap');
+        
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: #0d0f12;
+            user-select: none;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .font-teko { font-family: 'Teko', sans-serif; }
+
+        .glass-panel {
+            background: rgba(18, 22, 28, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .damage-bar {
+            transition: width 0.15s ease-out, background-color 0.2s ease;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- WebGL Canvas Container -->
+    <div id="canvas-container"></div>
+
+    <!-- UI Overlay HUD -->
+    <div class="absolute inset-0 pointer-events-none flex flex-col justify-between p-6 z-10">
+        
+        <!-- Top Navigation Bar -->
+        <div class="flex justify-between items-start gap-4">
+            <div class="glass-panel p-4 rounded-2xl flex items-center gap-4 text-white shadow-2xl pointer-events-auto">
+                <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 font-bold text-xl">
+                    4x4
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold tracking-wide uppercase text-amber-400 leading-none">Closed Stunt Arena</h1>
+                    <p class="text-xs text-gray-400 mt-1">Hold [M] + Right Click to drive to a point | Left mouse + drag to fling | Press [SHIFT] for Bird's Eye View</p>
+                </div>
+            </div>
+
+            <!-- Settings Bar Container -->
+            <div class="glass-panel p-4 rounded-2xl text-white min-w-[260px] pointer-events-auto space-y-3">
+                <div class="flex justify-between items-center border-b border-white/10 pb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Simulation Settings</span>
+                </div>
+                
+                <!-- Ute Color Picker -->
+                <div class="flex justify-between items-center text-xs">
+                    <span class="text-gray-300">Spawn Color:</span>
+                    <input type="color" id="setting-color" value="#dedcd8" class="w-8 h-6 bg-transparent rounded cursor-pointer border border-white/20">
+                </div>
+
+                <!-- Fall Damage Toggle -->
+                <div class="flex justify-between items-center text-xs">
+                    <span class="text-gray-300">Fall Damage:</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="setting-falldamage" checked class="sr-only peer">
+                        <div class="w-8 h-4 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-amber-500"></div>
+                    </label>
+                </div>
+
+                <!-- Crash Physics Mode -->
+                <div class="flex flex-col gap-1 text-xs">
+                    <span class="text-gray-300">Crash Mode:</span>
+                    <select id="setting-crashmode" class="bg-black/50 border border-white/10 rounded px-2 py-1 text-white text-xs outline-none focus:border-amber-500">
+                        <option value="softbody">Soft Body (Deformation)</option>
+                        <option value="shatter">Parts Smash Apart</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Vehicle Integrity Schematic -->
+            <div class="glass-panel p-4 rounded-2xl text-white min-w-[240px] pointer-events-auto">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs font-bold uppercase tracking-wider text-amber-400">Chassis Structural Integrity</span>
+                    <span id="health-pct" class="text-lg font-bold font-teko leading-none text-emerald-400">100%</span>
+                </div>
+                <div class="w-full bg-gray-800 h-2.5 rounded-full overflow-hidden p-0.5 border border-white/10">
+                    <div id="health-bar" class="damage-bar h-full bg-emerald-500 rounded-full" style="width: 100%;"></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2 mt-3 text-[11px]">
+                    <div class="bg-black/40 px-2 py-1.5 rounded flex justify-between border border-white/5">
+                        <span class="text-gray-400">Bullbar / Front:</span>
+                        <span id="zone-front" class="font-bold text-emerald-400">INTACT</span>
+                    </div>
+                    <div class="bg-black/40 px-2 py-1.5 rounded flex justify-between border border-white/5">
+                        <span class="text-gray-400">Cabin Shell:</span>
+                        <span id="zone-cabin" class="font-bold text-emerald-400">INTACT</span>
+                    </div>
+                    <div class="bg-black/40 px-2 py-1.5 rounded flex justify-between border border-white/5">
+                        <span class="text-gray-400">Rear Tray:</span>
+                        <span id="zone-tray" class="font-bold text-emerald-400">INTACT</span>
+                    </div>
+                    <div class="bg-black/40 px-2 py-1.5 rounded flex justify-between border border-white/5">
+                        <span class="text-gray-400">Suspension/Axle:</span>
+                        <span id="zone-susp" class="font-bold text-emerald-400">INTACT</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom Controls & Telemetry Corner HUD -->
+        <div class="flex justify-between items-end">
+            <!-- Telemetry & Interaction Hint -->
+            <div class="flex flex-col gap-3 pointer-events-auto">
+                <div class="glass-panel px-5 py-3 rounded-2xl flex items-center gap-5 border-amber-500/40 w-fit">
+                    <div class="text-center">
+                        <span id="parts-detached-display" class="text-2xl font-bold font-teko text-amber-400 leading-none">0 / 21</span>
+                        <span class="text-[10px] text-gray-400 uppercase tracking-widest block">PARTS DETACHED</span>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-4 rounded-2xl text-xs text-gray-300 space-y-1">
+                    <div class="font-bold text-amber-400 uppercase tracking-wider mb-2">Controls & Interaction</div>
+                    <div class="flex items-center gap-2"><span class="px-1.5 py-0.5 bg-white/10 rounded font-mono font-bold text-amber-300">LEFT MOUSE + DRAG (EMPTY SPACE)</span> Orbit Camera</div>
+                    <div class="flex items-center gap-2"><span class="px-1.5 py-0.5 bg-white/10 rounded font-mono font-bold text-red-400">HOLD [M] + RIGHT CLICK</span> Drive ute to clicked point</div>
+                    <div class="flex items-center gap-2"><span class="px-1.5 py-0.5 bg-white/10 rounded font-mono font-bold text-red-400">HOLD [M] + LEFT DRAG</span> Fling ute across arena</div>
+                    <div class="flex items-center gap-2"><span class="px-1.5 py-0.5 bg-white/10 rounded font-mono font-bold text-cyan-400">HOLD [SHIFT]</span> Bird's eye arena view & click car to focus</div>
+                    <div class="flex items-center gap-2"><span class="px-1.5 py-0.5 bg-white/10 rounded font-mono font-bold text-amber-300">ENTER</span> Spawn new car away from debris</div>
+                    <div class="flex items-center gap-2"><span class="px-1.5 py-0.5 bg-white/10 rounded font-mono font-bold text-amber-300">R</span> Instant Rebuild Chassis</div>
+                </div>
+            </div>
+
+            <!-- Action Buttons in Bottom-Right -->
+            <div class="flex gap-3 pointer-events-auto">
+                <button id="btn-reset" class="px-5 py-3 bg-gradient-to-r from-amber-600 to-red-600 hover:from-amber-500 hover:to-red-500 text-white text-xs font-extrabold uppercase tracking-wider rounded-xl shadow-lg active:scale-95 transition flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    Rebuild Chassis
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let scene, camera, renderer;
+        let clock = new THREE.Clock();
+
+        let raycaster = new THREE.Raycaster();
+        let mouse = new THREE.Vector2();
+        let isDraggingCar = false;
+        let isOrbiting = false;
+        let isMKeyPressed = false;
+        let isShiftPressed = false;
+        let isBirdEyeActive = false;
+        let birdEyeTarget = new THREE.Vector3(0, 0, 0);
+        let birdEyeZoom = 90.0;
+        let previousMousePosition = { x: 0, y: 0 };
+        let cameraAngleX = 0;
+        let cameraAngleY = 0.45;
+        let cameraDistance = 16.0;
+
+        let grabPlane = new THREE.Plane();
+        let grabLine = null;
+        let grabPlaneIntersect = new THREE.Vector3();
+
+        // BeamNG-style drive-to-point command while M is held.
+        let driveTarget = null;
+        let driveTargetMarker = null;
+        let driveGroundPlane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+        let driveGroundIntersect = new THREE.Vector3();
+
+        let cars = [];
+        let activeCarIndex = 0;
+
+        let crashWalls = [];
+
+        const wheelRadius = 0.55;
+        const wheelLocalPositions = [
+            { id: 'FL', local: new THREE.Vector3(-1.08, 0, 1.3),  zone: 'front' },
+            { id: 'FR', local: new THREE.Vector3( 1.08, 0, 1.3),  zone: 'front' },
+            { id: 'RL', local: new THREE.Vector3(-1.08, 0, -1.8), zone: 'tray' },
+            { id: 'RR', local: new THREE.Vector3( 1.08, 0, -1.8), zone: 'tray' }
+        ];
+
+        const sparkParticles = [];
+        const debrisParticles = [];
+        const dustParticles = [];
+
+        let trayMat, darkPlastMat, chromeMat, glassMat, rubberMat, rimMat, wallMat;
+        let sunLight;
+
+        function initScene() {
+            const container = document.getElementById('canvas-container');
+
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x6b8ebf);
+            scene.fog = new THREE.FogExp2(0xd69b70, 0.0015);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.15;
+            container.appendChild(renderer.domElement);
+
+            const lineMat = new THREE.LineBasicMaterial({ color: 0xffaa00, linewidth: 4 });
+            const lineGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
+            grabLine = new THREE.Line(lineGeo, lineMat);
+            grabLine.visible = false;
+            scene.add(grabLine);
+
+            // Destination marker for the M + right-click driving system.
+            const targetRingMat = new THREE.MeshBasicMaterial({
+                color: 0x22d3ee,
+                transparent: true,
+                opacity: 0.9,
+                side: THREE.DoubleSide
+            });
+            driveTargetMarker = new THREE.Mesh(
+                new THREE.RingGeometry(1.0, 1.28, 48),
+                targetRingMat
+            );
+            driveTargetMarker.rotation.x = -Math.PI / 2;
+            driveTargetMarker.position.y = 0.035;
+            driveTargetMarker.visible = false;
+            scene.add(driveTargetMarker);
+
+            const ambient = new THREE.AmbientLight(0x947663, 0.75);
+            scene.add(ambient);
+
+            const hemiLight = new THREE.HemisphereLight(0x739bd0, 0xc26c3c, 0.7);
+            scene.add(hemiLight);
+
+            sunLight = new THREE.DirectionalLight(0xfff3e0, 1.5);
+            sunLight.position.set(130, 100, 90);
+            sunLight.castShadow = true;
+            sunLight.shadow.mapSize.width = 2048;
+            sunLight.shadow.mapSize.height = 2048;
+            sunLight.shadow.camera.near = 10;
+            sunLight.shadow.camera.far = 350;
+            const d = 150;
+            sunLight.shadow.camera.left = -d;
+            sunLight.shadow.camera.right = d;
+            sunLight.shadow.camera.top = d;
+            sunLight.shadow.camera.bottom = -d;
+            sunLight.shadow.bias = -0.0005;
+            scene.add(sunLight);
+
+            createGround();
+            createCrashWalls();
+            initMaterials();
+
+            // Spawn initial car
+            const initialCar = buildCarAt(new THREE.Vector3(0, 0.6, 0));
+            cars.push(initialCar);
+            activeCarIndex = 0;
+
+            initListeners();
+            animate();
+        }
+
+        function createGround() {
+            const canvas = document.createElement('canvas');
+            canvas.width = 512;
+            canvas.height = 512;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#b84623';
+            ctx.fillRect(0, 0, 512, 512);
+
+            for (let i = 0; i < 35000; i++) {
+                ctx.fillStyle = Math.random() > 0.5 ? '#d65d36' : '#8f3014';
+                ctx.fillRect(Math.random() * 512, Math.random() * 512, 2, 2);
+            }
+
+            const groundTex = new THREE.CanvasTexture(canvas);
+            groundTex.wrapS = THREE.RepeatWrapping;
+            groundTex.wrapT = THREE.RepeatWrapping;
+            groundTex.repeat.set(60, 60);
+
+            const groundMat = new THREE.MeshStandardMaterial({ map: groundTex, roughness: 0.95 });
+            const ground = new THREE.Mesh(new THREE.PlaneGeometry(1000, 1000), groundMat);
+            ground.rotation.x = -Math.PI / 2;
+            ground.receiveShadow = true;
+            scene.add(ground);
+        }
+
+        function createCrashWalls() {
+            wallMat = new THREE.MeshStandardMaterial({ color: 0x8a929d, roughness: 0.7, metalness: 0.2 });
+            const stripeMat = new THREE.MeshStandardMaterial({ color: 0xc23b22, roughness: 0.6 });
+
+            crashWalls = [];
+
+            const arenaSize = 130;
+            const wallHeight = 5.0;
+            const wallThickness = 1.5;
+
+            const wallConfigs = [
+                { w: arenaSize, h: wallHeight, d: wallThickness, x: 0, z: arenaSize/2, ry: 0 },
+                { w: arenaSize, h: wallHeight, d: wallThickness, x: 0, z: -arenaSize/2, ry: 0 },
+                { w: arenaSize, h: wallHeight, d: wallThickness, x: arenaSize/2, z: 0, ry: Math.PI/2 },
+                { w: arenaSize, h: wallHeight, d: wallThickness, x: -arenaSize/2, z: 0, ry: Math.PI/2 }
+            ];
+
+            wallConfigs.forEach(cfg => {
+                const wallGroup = new THREE.Group();
+                const mainMesh = new THREE.Mesh(new THREE.BoxGeometry(cfg.w, cfg.h, cfg.d), wallMat);
+                mainMesh.position.y = cfg.h / 2;
+                mainMesh.castShadow = true;
+                mainMesh.receiveShadow = true;
+                wallGroup.add(mainMesh);
+
+                const stripeMesh = new THREE.Mesh(new THREE.BoxGeometry(cfg.w + 0.1, 0.8, cfg.d + 0.1), stripeMat);
+                stripeMesh.position.y = cfg.h * 0.65;
+                stripeMesh.castShadow = true;
+                wallGroup.add(stripeMesh);
+
+                wallGroup.position.set(cfg.x, 0, cfg.z);
+                wallGroup.rotation.y = cfg.ry;
+                scene.add(wallGroup);
+
+                wallGroup.updateMatrixWorld();
+                const box = new THREE.Box3().setFromObject(mainMesh);
+                crashWalls.push({ box: box, group: wallGroup });
+            });
+        }
+
+        function initMaterials() {
+            trayMat = new THREE.MeshStandardMaterial({ color: 0x949ca3, roughness: 0.4, metalness: 0.7 });
+            darkPlastMat = new THREE.MeshStandardMaterial({ color: 0x1f2124, roughness: 0.85 });
+            chromeMat = new THREE.MeshStandardMaterial({ color: 0xdde2e8, roughness: 0.2, metalness: 0.9 });
+            glassMat = new THREE.MeshStandardMaterial({ color: 0x162230, transparent: true, opacity: 0.7, roughness: 0.1, metalness: 0.8 });
+            rubberMat = new THREE.MeshStandardMaterial({ color: 0x181818, roughness: 0.9 });
+            rimMat = new THREE.MeshStandardMaterial({ color: 0x7c868e, metalness: 0.8, roughness: 0.3 });
+        }
+
+        function buildCarAt(spawnPos) {
+            const chosenColorHex = document.getElementById('setting-color').value;
+            const utePaintMat = new THREE.MeshStandardMaterial({ color: new THREE.Color(chosenColorHex), roughness: 0.45, metalness: 0.2 });
+
+            const car = {
+                position: spawnPos.clone(),
+                velocity: new THREE.Vector3(0, 0, 0),
+                rotationVel: new THREE.Vector3(0, 0, 0),
+                isFlinging: false,
+                isDrivingToTarget: false,
+                driveTarget: null,
+                driveSpeed: 0,
+                group: new THREE.Group(),
+                chassisGroup: new THREE.Group(),
+                breakawayParts: [],
+                wheels: [],
+                detachedCount: 0
+            };
+            car.group.add(car.chassisGroup);
+
+            function addPart(mesh, zoneName, healthLimit = 15.0) {
+                let originalPositions = null;
+
+                if (mesh.geometry) {
+                    mesh.geometry = mesh.geometry.toNonIndexed();
+                    mesh.geometry.computeVertexNormals();
+
+                    const posAttr = mesh.geometry.attributes.position;
+                    originalPositions = new Float32Array(posAttr.array.length);
+                    originalPositions.set(posAttr.array);
+                }
+
+                mesh.castShadow = true;
+                mesh.receiveShadow = true;
+                car.chassisGroup.add(mesh);
+
+                const partEntry = {
+                    mesh: mesh,
+                    zone: zoneName,
+                    health: healthLimit,
+                    detached: false,
+                    originalPositions: originalPositions,
+                    velocity: new THREE.Vector3(),
+                    rotVelocity: new THREE.Vector3()
+                };
+                car.breakawayParts.push(partEntry);
+                return partEntry;
+            }
+
+            const cabLowerMesh = new THREE.Mesh(new THREE.BoxGeometry(2.1, 1.0, 2.0, 10, 8, 10), utePaintMat);
+            cabLowerMesh.position.set(0, 1.1, 0);
+            addPart(cabLowerMesh, 'cabin', 25.0);
+
+            const cabUpperMesh = new THREE.Mesh(new THREE.BoxGeometry(1.95, 0.95, 1.4, 10, 8, 8), utePaintMat);
+            cabUpperMesh.position.set(0, 2.0, -0.1);
+            addPart(cabUpperMesh, 'cabin', 20.0);
+
+            const hoodMesh = new THREE.Mesh(new THREE.BoxGeometry(2.05, 0.5, 1.6, 10, 6, 10), utePaintMat);
+            hoodMesh.position.set(0, 1.15, 1.7);
+            hoodMesh.rotation.x = 0.06;
+            addPart(hoodMesh, 'front', 16.0);
+
+            const windshieldMesh = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.85, 0.08, 8, 6, 1), glassMat);
+            windshieldMesh.position.set(0, 2.0, 0.62);
+            windshieldMesh.rotation.x = -0.38;
+            addPart(windshieldMesh, 'cabin', 12.0);
+
+            const rearWinMesh = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.6, 0.06, 8, 6, 1), glassMat);
+            rearWinMesh.position.set(0, 2.05, -0.81);
+            addPart(rearWinMesh, 'cabin', 12.0);
+
+            for (let sx of [-0.99, 0.99]) {
+                const mirrorHead = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.26, 0.18, 4, 4, 4), darkPlastMat);
+                mirrorHead.position.set(sx * 1.25, 1.85, 0.3);
+                addPart(mirrorHead, 'cabin', 8.0);
+            }
+
+            const snorkelTube = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.2, 10, 10), darkPlastMat);
+            snorkelTube.position.set(-1.08, 1.85, 0.55);
+            snorkelTube.rotation.z = -0.15;
+            addPart(snorkelTube, 'front', 10.0);
+
+            const trayBase = new THREE.Mesh(new THREE.BoxGeometry(2.25, 0.12, 2.6, 10, 2, 10), trayMat);
+            trayBase.position.set(0, 0.95, -2.1);
+            addPart(trayBase, 'tray', 25.0);
+
+            const sideLeft = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.45, 2.6, 2, 8, 10), trayMat);
+            sideLeft.position.set(-1.1, 1.24, -2.1);
+            addPart(sideLeft, 'tray', 15.0);
+
+            const sideRight = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.45, 2.6, 2, 8, 10), trayMat);
+            sideRight.position.set(1.1, 1.24, -2.1);
+            addPart(sideRight, 'tray', 15.0);
+
+            const tailgate = new THREE.Mesh(new THREE.BoxGeometry(2.25, 0.45, 0.08, 10, 8, 2), trayMat);
+            tailgate.position.set(0, 1.24, -3.38);
+            addPart(tailgate, 'tray', 12.0);
+
+            const spareTire = new THREE.Mesh(new THREE.CylinderGeometry(0.52, 0.52, 0.38, 16, 4), rubberMat);
+            spareTire.rotation.x = Math.PI / 2;
+            spareTire.position.set(-0.5, 1.25, -1.3);
+            addPart(spareTire, 'tray', 14.0);
+
+            const bullbarBumper = new THREE.Mesh(new THREE.BoxGeometry(2.35, 0.4, 0.18, 12, 6, 4), chromeMat);
+            bullbarBumper.position.set(0, 0.8, 2.68);
+            addPart(bullbarBumper, 'front', 18.0);
+
+            for (let spX of [-0.38, 0.38]) {
+                const spotHousing = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.16, 12, 2), darkPlastMat);
+                spotHousing.rotation.x = Math.PI / 2;
+                spotHousing.position.set(spX, 1.3, 2.78);
+                addPart(spotHousing, 'front', 9.0);
+            }
+
+            const antennaWhip = new THREE.Mesh(new THREE.CylinderGeometry(0.015, 0.025, 2.4, 6, 12), darkPlastMat);
+            antennaWhip.position.set(-1.0, 2.3, 2.72);
+            antennaWhip.rotation.z = -0.04;
+            addPart(antennaWhip, 'front', 6.0);
+
+            wheelLocalPositions.forEach(wp => {
+                const wheelGroup = new THREE.Group();
+                wheelGroup.position.copy(wp.local);
+
+                const tire = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.42, 18), rubberMat);
+                tire.rotation.z = Math.PI / 2;
+                tire.castShadow = true;
+                wheelGroup.add(tire);
+
+                const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.44, 12), rimMat);
+                rim.rotation.z = Math.PI / 2;
+                wheelGroup.add(rim);
+
+                const wheelData = {
+                    id: wp.id,
+                    mesh: wheelGroup,
+                    localPos: wp.local.clone(),
+                    detached: false
+                };
+                car.wheels.push(wheelData);
+
+                const wheelPart = addPart(wheelGroup, wp.zone, 18.0);
+                wheelPart.isWheel = true;
+                wheelPart.wheelRef = wheelData;
+            });
+
+            car.group.position.copy(car.position);
+            scene.add(car.group);
+            return car;
+        }
+
+        function findSafeSpawnPosition() {
+            let bestPos = new THREE.Vector3(0, 0.6, 0);
+            let maxMinDist = -1;
+
+            for (let attempt = 0; attempt < 50; attempt++) {
+                const rx = (Math.random() - 0.5) * 90;
+                const rz = (Math.random() - 0.5) * 90;
+                const candidate = new THREE.Vector3(rx, 0.6, rz);
+
+                let minDist = Infinity;
+                cars.forEach(car => {
+                    const d = candidate.distanceTo(car.position);
+                    if (d < minDist) minDist = d;
+                    car.breakawayParts.forEach(p => {
+                        const wPos = new THREE.Vector3();
+                        p.mesh.getWorldPosition(wPos);
+                        const pd = candidate.distanceTo(wPos);
+                        if (pd < minDist) minDist = pd;
+                    });
+                });
+
+                debrisParticles.forEach(dbe => {
+                    const d = candidate.distanceTo(dbe.position);
+                    if (d < minDist) minDist = d;
+                });
+
+                if (minDist > maxMinDist) {
+                    maxMinDist = minDist;
+                    bestPos.copy(candidate);
+                }
+            }
+            return bestPos;
+        }
+
+        function applySoftBodyDeformation(car, impactWorldPos, impactForce) {
+            car.breakawayParts.forEach(part => {
+                if (part.detached || !part.mesh.geometry) return;
+
+                const posAttr = part.mesh.geometry.attributes.position;
+                let partModified = false;
+
+                for (let i = 0; i < posAttr.count; i++) {
+                    const vx = posAttr.getX(i);
+                    const vy = posAttr.getY(i);
+                    const vz = posAttr.getZ(i);
+
+                    const vWorld = new THREE.Vector3(vx, vy, vz);
+                    part.mesh.localToWorld(vWorld);
+
+                    const dist = vWorld.distanceTo(impactWorldPos);
+                    const deformationRadius = 3.8;
+
+                    if (dist < deformationRadius) {
+                        const falloff = 1.0 - (dist / deformationRadius);
+                        const crushIntensity = Math.min(4.5, (impactForce * 0.18)) * falloff * falloff;
+
+                        const pushDir = vWorld.clone().sub(impactWorldPos).normalize();
+                        
+                        const buckleNoiseX = Math.sin(vWorld.y * 8.0) * Math.cos(vWorld.z * 6.0);
+                        const buckleNoiseY = Math.cos(vWorld.x * 8.0) * Math.sin(vWorld.z * 6.0);
+                        const buckleNoiseZ = Math.sin(vWorld.x * 6.0) * Math.cos(vWorld.y * 6.0);
+
+                        vWorld.addScaledVector(pushDir, -crushIntensity * 0.75);
+                        vWorld.x += buckleNoiseX * crushIntensity * 0.4;
+                        vWorld.y += buckleNoiseY * crushIntensity * 0.4;
+                        vWorld.z += buckleNoiseZ * crushIntensity * 0.4;
+
+                        part.mesh.worldToLocal(vWorld);
+                        posAttr.setXYZ(i, vWorld.x, vWorld.y, vWorld.z);
+                        partModified = true;
+                    }
+                }
+
+                if (partModified) {
+                    posAttr.needsUpdate = true;
+                    part.mesh.geometry.computeVertexNormals();
+                }
+            });
+        }
+
+        function detachPart(car, part, pullDirection = new THREE.Vector3(0, 1, 0)) {
+            if (part.detached) return;
+            part.detached = true;
+
+            if (part.isWheel && part.wheelRef) {
+                part.wheelRef.detached = true;
+                if (car === cars[activeCarIndex]) {
+                    const zoneLabel = document.getElementById('zone-susp');
+                    if (zoneLabel) {
+                        zoneLabel.textContent = 'DAMAGED';
+                        zoneLabel.className = 'font-bold text-red-400 animate-pulse';
+                    }
+                }
+            }
+
+            car.detachedCount++;
+            if (car === cars[activeCarIndex]) {
+                document.getElementById('parts-detached-display').textContent = `${car.detachedCount} / ${car.breakawayParts.length}`;
+            }
+
+            const worldPos = new THREE.Vector3();
+            part.mesh.getWorldPosition(worldPos);
+            scene.attach(part.mesh);
+
+            part.velocity = pullDirection.clone().multiplyScalar(4.0).add(new THREE.Vector3(
+                (Math.random() - 0.5) * 2.0,
+                2.0 + Math.random() * 3.0,
+                (Math.random() - 0.5) * 2.0
+            ));
+
+            part.rotVelocity = new THREE.Vector3(
+                (Math.random() - 0.5) * 0.8,
+                (Math.random() - 0.5) * 0.8,
+                (Math.random() - 0.5) * 0.8
+            );
+
+            spawnSparks(worldPos.x, worldPos.y, worldPos.z, 15);
+            spawnDebris(worldPos.x, worldPos.y, worldPos.z, 3);
+            spawnDust(worldPos.x, worldPos.y, worldPos.z, 8);
+        }
+
+
+        function clearDriveTarget(car = null) {
+            if (car) {
+                car.isDrivingToTarget = false;
+                car.driveTarget = null;
+                car.driveSpeed = 0;
+                if (car.velocity) {
+                    car.velocity.x = 0;
+                    car.velocity.z = 0;
+                }
+            }
+            driveTarget = null;
+            if (driveTargetMarker) driveTargetMarker.visible = false;
+        }
+
+        function setDriveTarget(worldPoint) {
+            const activeCar = cars[activeCarIndex];
+            if (!activeCar || isBirdEyeActive || !isMKeyPressed) return;
+
+            driveTarget = new THREE.Vector3(worldPoint.x, 0.6, worldPoint.z);
+            activeCar.isFlinging = false;
+            activeCar.isDrivingToTarget = true;
+            activeCar.driveTarget = driveTarget.clone();
+            activeCar.driveSpeed = Math.max(
+                0,
+                Math.sqrt(activeCar.velocity.x * activeCar.velocity.x + activeCar.velocity.z * activeCar.velocity.z)
+            );
+
+            // Cancel any old fling/spin so the vehicle can behave like a controllable ute.
+            activeCar.velocity.y = 0;
+            activeCar.rotationVel.set(0, 0, 0);
+
+            if (driveTargetMarker) {
+                driveTargetMarker.position.set(worldPoint.x, 0.035, worldPoint.z);
+                driveTargetMarker.visible = true;
+            }
+        }
+
+        function applyWallCrash(car, impactSpeed, crashMode) {
+            if (impactSpeed < 0.5) return;
+
+            if (crashMode === 'softbody') {
+                applySoftBodyDeformation(car, car.position.clone(), impactSpeed * 2.0);
+            } else {
+                car.breakawayParts.forEach(p => {
+                    if (!p.detached && Math.random() < 0.7) {
+                        const push = car.velocity.clone();
+                        if (push.lengthSq() < 0.01) push.set(0, 0, 1);
+                        detachPart(car, p, push.normalize());
+                    }
+                });
+            }
+
+            spawnSparks(car.position.x, car.position.y + 1.0, car.position.z, Math.min(40, Math.floor(10 + impactSpeed * 1.8)));
+            spawnDebris(car.position.x, car.position.y + 1.0, car.position.z, Math.min(10, Math.floor(2 + impactSpeed * 0.35)));
+            spawnDust(car.position.x, car.position.y + 0.2, car.position.z, Math.min(18, Math.floor(5 + impactSpeed * 0.7)));
+
+            car.rotationVel.x += (Math.random() - 0.5) * Math.min(12, impactSpeed * 0.7);
+            car.rotationVel.z += (Math.random() - 0.5) * Math.min(12, impactSpeed * 0.7);
+
+            if (crashMode === 'softbody' && impactSpeed > 10) {
+                car.breakawayParts.forEach(p => {
+                    if (!p.detached && Math.random() < Math.min(0.4, impactSpeed / 60)) {
+                        const push = car.velocity.clone();
+                        if (push.lengthSq() < 0.01) push.set(0, 0, 1);
+                        detachPart(car, p, push.normalize());
+                    }
+                });
+            }
+        }
+
+        function handleArenaWallCollision(car, crashMode) {
+            const arenaLimit = 61.5;
+            let hitWall = false;
+            let normal = new THREE.Vector3(0, 0, 0);
+
+            if (car.position.x > arenaLimit) {
+                car.position.x = arenaLimit;
+                car.velocity.x = -Math.abs(car.velocity.x) * 0.4;
+                hitWall = true;
+                normal.set(-1, 0, 0);
+            } else if (car.position.x < -arenaLimit) {
+                car.position.x = -arenaLimit;
+                car.velocity.x = Math.abs(car.velocity.x) * 0.4;
+                hitWall = true;
+                normal.set(1, 0, 0);
+            }
+
+            if (car.position.z > arenaLimit) {
+                car.position.z = arenaLimit;
+                car.velocity.z = -Math.abs(car.velocity.z) * 0.4;
+                hitWall = true;
+                normal.set(0, 0, -1);
+            } else if (car.position.z < -arenaLimit) {
+                car.position.z = -arenaLimit;
+                car.velocity.z = Math.abs(car.velocity.z) * 0.4;
+                hitWall = true;
+                normal.set(0, 0, 1);
+            }
+
+            if (hitWall) {
+                const impactSpeed = Math.max(
+                    Math.abs(car.velocity.x),
+                    Math.abs(car.velocity.z),
+                    car.driveSpeed || 0
+                );
+
+                // A destination outside the arena stays active: the ute hits the
+                // wall normally and keeps trying to reach the requested point.
+                applyWallCrash(car, impactSpeed, crashMode);
+
+                if (car.isDrivingToTarget) {
+                    // Let the vehicle recover from the collision instead of
+                    // instantly cancelling the drive command.
+                    const away = normal.clone().multiplyScalar(0.35);
+                    car.position.add(away);
+                    car.driveSpeed *= 0.28;
+                }
+            }
+
+            return hitWall;
+        }
+
+        function updateDriveToTarget(car, delta, crashMode) {
+            if (!car.isDrivingToTarget || !car.driveTarget) return;
+
+            const target = car.driveTarget;
+            const dx = target.x - car.position.x;
+            const dz = target.z - car.position.z;
+            const distance = Math.sqrt(dx * dx + dz * dz);
+
+            // Stop exactly at the requested point and return to normal controls.
+            if (distance < 0.8) {
+                car.position.x = target.x;
+                car.position.z = target.z;
+                car.velocity.set(0, 0, 0);
+                car.driveSpeed = 0;
+                car.isDrivingToTarget = false;
+                car.driveTarget = null;
+                driveTarget = null;
+                if (driveTargetMarker) driveTargetMarker.visible = false;
+                car.group.rotation.x = THREE.MathUtils.lerp(car.group.rotation.x, 0, Math.min(1, delta * 7));
+                car.group.rotation.z = THREE.MathUtils.lerp(car.group.rotation.z, 0, Math.min(1, delta * 7));
+                return;
+            }
+
+            const direction = new THREE.Vector3(dx / distance, 0, dz / distance);
+
+            // Realistic-ish road vehicle speed profile:
+            // accelerate smoothly, then brake progressively near the target.
+            const maxSpeed = 14.0;       // ~50 km/h in this world scale
+            const acceleration = 7.0;
+            const braking = 10.5;
+            const reactionDistance = Math.max(4.0, (car.driveSpeed * car.driveSpeed) / (2 * braking) + 2.0);
+
+            let desiredSpeed = maxSpeed;
+            if (distance < reactionDistance) {
+                desiredSpeed = Math.max(0, Math.sqrt(Math.max(0, 2 * braking * Math.max(0, distance - 0.45))));
+            }
+
+            if (car.driveSpeed < desiredSpeed) {
+                car.driveSpeed = Math.min(desiredSpeed, car.driveSpeed + acceleration * delta);
+            } else {
+                car.driveSpeed = Math.max(desiredSpeed, car.driveSpeed - braking * delta);
+            }
+
+            // Keep the ute travelling toward the target on the ground plane.
+            car.velocity.x = direction.x * car.driveSpeed;
+            car.velocity.z = direction.z * car.driveSpeed;
+            car.velocity.y = 0;
+
+            car.position.addScaledVector(car.velocity, delta);
+
+            // Smoothly steer the ute so its nose points where it is driving.
+            const targetYaw = Math.atan2(direction.x, direction.z);
+            let yawDifference = targetYaw - car.group.rotation.y;
+            while (yawDifference > Math.PI) yawDifference -= Math.PI * 2;
+            while (yawDifference < -Math.PI) yawDifference += Math.PI * 2;
+
+            const steeringRate = Math.min(1, delta * 6.0);
+            car.group.rotation.y += yawDifference * steeringRate;
+            car.group.rotation.x = THREE.MathUtils.lerp(car.group.rotation.x, 0, Math.min(1, delta * 8));
+            car.group.rotation.z = THREE.MathUtils.lerp(car.group.rotation.z, 0, Math.min(1, delta * 8));
+
+            // Small tyre/body motion cues while accelerating and braking.
+            if (car.driveSpeed > 0.4) {
+                spawnDust(
+                    car.position.x - direction.x * 1.5,
+                    0.08,
+                    car.position.z - direction.z * 1.5,
+                    car.driveSpeed > 9 ? 1 : 0
+                );
+            }
+
+            handleArenaWallCollision(car, crashMode);
+
+            // If the target is outside the arena, keep the command active so
+            // the ute repeatedly attempts to reach it and takes normal wall damage.
+            const remaining = Math.hypot(target.x - car.position.x, target.z - car.position.z);
+            if (remaining < 0.8) {
+                car.position.x = target.x;
+                car.position.z = target.z;
+                car.velocity.set(0, 0, 0);
+                car.driveSpeed = 0;
+                car.isDrivingToTarget = false;
+                car.driveTarget = null;
+                driveTarget = null;
+                if (driveTargetMarker) driveTargetMarker.visible = false;
+            }
+        }
+
+        function initListeners() {
+            window.addEventListener('keydown', (e) => {
+                if (e.code === 'KeyR') resetUte();
+                if (e.code === 'KeyM') isMKeyPressed = true;
+                if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+                    isShiftPressed = true;
+                    isBirdEyeActive = true;
+                }
+                if (e.code === 'Enter') {
+                    const safePos = findSafeSpawnPosition();
+                    const newCar = buildCarAt(safePos);
+                    cars.push(newCar);
+                    activeCarIndex = cars.length - 1;
+                    updateHUDActiveCar();
+                }
+            });
+
+            window.addEventListener('keyup', (e) => {
+                if (e.code === 'KeyM') {
+                    isMKeyPressed = false;
+                    if (isDraggingCar) {
+                        isDraggingCar = false;
+                        grabLine.visible = false;
+                    }
+                }
+                if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+                    isShiftPressed = false;
+                }
+            });
+
+            window.addEventListener('mousedown', (e) => {
+                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+                // M + RIGHT CLICK = set a driving destination on the ground.
+                if (e.button === 2 && isMKeyPressed && !isBirdEyeActive) {
+                    e.preventDefault();
+                    raycaster.setFromCamera(mouse, camera);
+                    if (raycaster.ray.intersectPlane(driveGroundPlane, driveGroundIntersect)) {
+                        setDriveTarget(driveGroundIntersect);
+                    }
+                    return;
+                }
+
+                if (e.button === 0) {
+                    if (isBirdEyeActive) {
+                        raycaster.setFromCamera(mouse, camera);
+                        let carMeshes = [];
+                        cars.forEach((c, idx) => {
+                            c.chassisGroup.traverse(child => {
+                                if (child.isMesh) {
+                                    child.userData.carIndex = idx;
+                                    carMeshes.push(child);
+                                }
+                            });
+                        });
+                        const intersects = raycaster.intersectObjects(carMeshes, false);
+                        if (intersects.length > 0) {
+                            const hitCarIdx = intersects[0].object.userData.carIndex;
+                            if (hitCarIdx !== undefined) {
+                                activeCarIndex = hitCarIdx;
+                                isBirdEyeActive = false;
+                                updateHUDActiveCar();
+                            }
+                        }
+                    } else if (isMKeyPressed) {
+                        // Preserve the existing M + left-drag fling mechanic.
+                        // A drive command is cancelled when the user starts a fling.
+                        const activeCar = cars[activeCarIndex];
+                        if (activeCar && activeCar.isDrivingToTarget) {
+                            clearDriveTarget(activeCar);
+                        }
+                        isDraggingCar = true;
+                        const cameraDir = camera.getWorldDirection(new THREE.Vector3()).negate();
+                        grabPlane.setFromNormalAndCoplanarPoint(cameraDir, activeCar ? activeCar.position : new THREE.Vector3());
+                        grabLine.visible = true;
+                    } else {
+                        isOrbiting = true;
+                        previousMousePosition = { x: e.clientX, y: e.clientY };
+                    }
+                }
+            });
+
+            window.addEventListener('contextmenu', (e) => {
+                if (isMKeyPressed) e.preventDefault();
+            });
+
+            window.addEventListener('mousemove', (e) => {
+                mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+                mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+
+                if (isBirdEyeActive && e.buttons === 1) {
+                    const deltaX = e.clientX - previousMousePosition.x;
+                    const deltaY = e.clientY - previousMousePosition.y;
+                    birdEyeTarget.x -= deltaX * 0.15;
+                    birdEyeTarget.z -= deltaY * 0.15;
+                    previousMousePosition = { x: e.clientX, y: e.clientY };
+                } else if (isOrbiting) {
+                    const deltaX = e.clientX - previousMousePosition.x;
+                    const deltaY = e.clientY - previousMousePosition.y;
+
+                    cameraAngleX -= deltaX * 0.005;
+                    cameraAngleY = Math.max(0.05, Math.min(Math.PI / 2 - 0.05, cameraAngleY + deltaY * 0.005));
+
+                    previousMousePosition = { x: e.clientX, y: e.clientY };
+                }
+
+                if (isDraggingCar && isMKeyPressed && cars[activeCarIndex]) {
+                    raycaster.setFromCamera(mouse, camera);
+                    if (raycaster.ray.intersectPlane(grabPlane, grabPlaneIntersect)) {
+                        const targetWorld = grabPlaneIntersect;
+                        const activeCar = cars[activeCarIndex];
+                        
+                        const pullVector = targetWorld.clone().sub(activeCar.position);
+                        activeCar.velocity.copy(pullVector.clone().multiplyScalar(12.0));
+                        activeCar.rotationVel.set(
+                            (Math.random() - 0.5) * 5.0,
+                            (Math.random() - 0.5) * 5.0,
+                            (Math.random() - 0.5) * 5.0
+                        );
+                        activeCar.isFlinging = true;
+
+                        const linePos = grabLine.geometry.attributes.position;
+                        linePos.setXYZ(0, activeCar.position.x, activeCar.position.y + 1.0, activeCar.position.z);
+                        linePos.setXYZ(1, targetWorld.x, targetWorld.y, targetWorld.z);
+                        linePos.needsUpdate = true;
+                    }
+                }
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+
+            window.addEventListener('mouseup', () => {
+                isOrbiting = false;
+                if (isDraggingCar) {
+                    isDraggingCar = false;
+                    grabLine.visible = false;
+                }
+            });
+
+            window.addEventListener('wheel', (e) => {
+                if (isBirdEyeActive) {
+                    birdEyeZoom = Math.max(30.0, Math.min(160.0, birdEyeZoom + e.deltaY * 0.08));
+                } else {
+                    cameraDistance = Math.max(6.0, Math.min(45.0, cameraDistance + e.deltaY * 0.01));
+                }
+            });
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+
+            document.getElementById('btn-reset').addEventListener('click', resetUte);
+        }
+
+        function updateHUDActiveCar() {
+            const car = cars[activeCarIndex];
+            if (!car) return;
+            document.getElementById('parts-detached-display').textContent = `${car.detachedCount} / ${car.breakawayParts.length}`;
+            document.getElementById('health-pct').textContent = '100%';
+            
+            const barElem = document.getElementById('health-bar');
+            barElem.style.width = '100%';
+            barElem.className = 'damage-bar h-full bg-emerald-500 rounded-full';
+
+            ['front', 'cabin', 'tray', 'susp'].forEach(z => {
+                const label = document.getElementById(`zone-${z}`);
+                if (label) {
+                    label.textContent = 'INTACT';
+                    label.className = 'font-bold text-emerald-400';
+                }
+            });
+        }
+
+        function spawnSparks(x, y, z, count) {
+            const sparkGeo = new THREE.SphereGeometry(0.05, 4, 4);
+            const sparkMat = new THREE.MeshBasicMaterial({ color: 0xffcc33 });
+
+            for (let i = 0; i < count; i++) {
+                const p = new THREE.Mesh(sparkGeo, sparkMat);
+                p.position.set(x, y, z);
+                p.vel = new THREE.Vector3(
+                    (Math.random() - 0.5) * 10,
+                    2 + Math.random() * 6,
+                    (Math.random() - 0.5) * 10
+                );
+                p.life = 0.4 + Math.random() * 0.2;
+                scene.add(p);
+                sparkParticles.push(p);
+            }
+        }
+
+        function spawnDebris(x, y, z, count) {
+            const debrisGeo = new THREE.BoxGeometry(0.12, 0.12, 0.12);
+            const debrisMat = new THREE.MeshStandardMaterial({ color: 0x44484d, roughness: 0.8 });
+
+            for (let i = 0; i < count; i++) {
+                const d = new THREE.Mesh(debrisGeo, debrisMat);
+                d.position.set(x + (Math.random() - 0.5), y, z + (Math.random() - 0.5));
+                d.vel = new THREE.Vector3(
+                    (Math.random() - 0.5) * 6,
+                    1 + Math.random() * 4,
+                    (Math.random() - 0.5) * 6
+                );
+                d.rotVel = new THREE.Vector3(
+                    Math.random() * 0.3,
+                    Math.random() * 0.3,
+                    Math.random() * 0.3
+                );
+                d.life = 2.0;
+                scene.add(d);
+                debrisParticles.push(d);
+            }
+        }
+
+        function spawnDust(x, y, z, count) {
+            const dustGeo = new THREE.SphereGeometry(0.2, 6, 6);
+            const dustMat = new THREE.MeshBasicMaterial({ color: 0xb5734a, transparent: true, opacity: 0.5 });
+
+            for (let i = 0; i < count; i++) {
+                const ds = new THREE.Mesh(dustGeo, dustMat);
+                ds.position.set(x + (Math.random() - 0.5) * 1.5, y, z + (Math.random() - 0.5) * 1.5);
+                ds.vel = new THREE.Vector3(
+                    (Math.random() - 0.5) * 4,
+                    0.5 + Math.random() * 2,
+                    (Math.random() - 0.5) * 4
+                );
+                ds.life = 0.6 + Math.random() * 0.4;
+                scene.add(ds);
+                dustParticles.push(ds);
+            }
+        }
+
+        function resetUte() {
+            const activeCar = cars[activeCarIndex];
+            if (!activeCar) return;
+
+            clearDriveTarget(activeCar);
+            scene.remove(activeCar.group);
+            const freshCar = buildCarAt(new THREE.Vector3(0, 0.6, 0));
+            cars[activeCarIndex] = freshCar;
+            updateHUDActiveCar();
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            let delta = clock.getDelta();
+
+            const elapsedTime = clock.getElapsedTime();
+            if (driveTargetMarker && driveTargetMarker.visible) {
+                const pulse = 1.0 + Math.sin(elapsedTime * 6.0) * 0.12;
+                driveTargetMarker.scale.set(pulse, pulse, pulse);
+                driveTargetMarker.material.opacity = 0.72 + Math.sin(elapsedTime * 6.0) * 0.18;
+            }
+            if (sunLight) {
+                sunLight.position.x = 130 + Math.sin(elapsedTime * 0.05) * 20;
+            }
+
+            const fallDamageEnabled = document.getElementById('setting-falldamage').checked;
+            const crashMode = document.getElementById('setting-crashmode').value;
+
+            cars.forEach(car => {
+                if (car.isDrivingToTarget) {
+                    updateDriveToTarget(car, delta, crashMode);
+                } else if (car.isFlinging) {
+                    car.position.addScaledVector(car.velocity, delta);
+                    car.group.rotation.x += car.rotationVel.x * delta;
+                    car.group.rotation.y += car.rotationVel.y * delta;
+                    car.group.rotation.z += car.rotationVel.z * delta;
+
+                    car.velocity.y -= 28.0 * delta; // gravity
+
+                    // Ground collision check
+                    if (car.position.y <= 0.6) {
+                        car.position.y = 0.6;
+                        const impactSpeed = car.velocity.length();
+                        
+                        if (fallDamageEnabled) {
+                            if (crashMode === 'softbody') {
+                                applySoftBodyDeformation(car, car.position.clone(), impactSpeed * 1.5);
+                            } else {
+                                // Shatter mode: detach multiple parts instantly instead of deforming
+                                car.breakawayParts.forEach(p => {
+                                    if (!p.detached && Math.random() < 0.6) {
+                                        detachPart(car, p, car.velocity.clone().normalize());
+                                    }
+                                });
+                            }
+                        }
+
+                        spawnSparks(car.position.x, car.position.y, car.position.z, Math.floor(impactSpeed * 2));
+                        spawnDust(car.position.x, car.position.y, car.position.z, 10);
+
+                        if (fallDamageEnabled && impactSpeed > 10.0 && crashMode === 'softbody') {
+                            car.breakawayParts.forEach(p => {
+                                if (!p.detached && Math.random() < 0.25) {
+                                    detachPart(car, p, car.velocity.clone().normalize());
+                                }
+                            });
+                        }
+
+                        car.velocity.multiplyScalar(-0.35);
+                        car.rotationVel.multiplyScalar(0.5);
+
+                        if (impactSpeed < 1.5) {
+                            car.isFlinging = false;
+                            car.group.rotation.set(0, 0, 0);
+                        }
+                    }
+
+                    // Hard Arena Boundary Collision
+                    const arenaLimit = 61.5; 
+                    let hitWall = false;
+                    const impactSpeed = car.velocity.length();
+
+                    if (car.position.x > arenaLimit) {
+                        car.position.x = arenaLimit;
+                        car.velocity.x = -car.velocity.x * 0.4;
+                        hitWall = true;
+                    } else if (car.position.x < -arenaLimit) {
+                        car.position.x = -arenaLimit;
+                        car.velocity.x = -car.velocity.x * 0.4;
+                        hitWall = true;
+                    }
+
+                    if (car.position.z > arenaLimit) {
+                        car.position.z = arenaLimit;
+                        car.velocity.z = -car.velocity.z * 0.4;
+                        hitWall = true;
+                    } else if (car.position.z < -arenaLimit) {
+                        car.position.z = -arenaLimit;
+                        car.velocity.z = -car.velocity.z * 0.4;
+                        hitWall = true;
+                    }
+
+                    if (hitWall) {
+                        if (crashMode === 'softbody') {
+                            applySoftBodyDeformation(car, car.position.clone(), impactSpeed * 2.0);
+                        } else {
+                            car.breakawayParts.forEach(p => {
+                                if (!p.detached && Math.random() < 0.7) {
+                                    detachPart(car, p, car.velocity.clone().normalize());
+                                }
+                            });
+                        }
+
+                        spawnSparks(car.position.x, car.position.y + 1.0, car.position.z, 20);
+                        spawnDebris(car.position.x, car.position.y + 1.0, car.position.z, 5);
+
+                        car.rotationVel.x += (Math.random() - 0.5) * 12;
+                        car.rotationVel.z += (Math.random() - 0.5) * 12;
+
+                        if (crashMode === 'softbody') {
+                            car.breakawayParts.forEach(p => {
+                                if (!p.detached && Math.random() < 0.4) {
+                                    detachPart(car, p, car.velocity.clone().normalize());
+                                }
+                            });
+                        }
+                    }
+                }
+
+                if (car.group) {
+                    car.group.position.copy(car.position);
+                }
+
+                car.breakawayParts.forEach(part => {
+                    if (part.detached && part.velocity) {
+                        part.mesh.position.addScaledVector(part.velocity, delta);
+                        part.mesh.rotation.x += part.rotVelocity.x;
+                        part.mesh.rotation.y += part.rotVelocity.y;
+                        part.velocity.y -= 25.0 * 0.8 * delta;
+
+                        const partLimit = 62.5;
+                        if (Math.abs(part.mesh.position.x) > partLimit) {
+                            part.mesh.position.x = Math.sign(part.mesh.position.x) * partLimit;
+                            part.velocity.x *= -0.4;
+                        }
+                        if (Math.abs(part.mesh.position.z) > partLimit) {
+                            part.mesh.position.z = Math.sign(part.mesh.position.z) * partLimit;
+                            part.velocity.z *= -0.4;
+                        }
+
+                        if (part.mesh.position.y <= 0.2) {
+                            part.mesh.position.y = 0.2;
+                            part.velocity.multiplyScalar(0.4);
+                            part.velocity.y = -part.velocity.y * 0.3;
+                            part.rotVelocity.multiplyScalar(0.5);
+                        }
+                    }
+                });
+            });
+
+            for (let i = sparkParticles.length - 1; i >= 0; i--) {
+                const p = sparkParticles[i];
+                p.position.addScaledVector(p.vel, delta);
+                p.life -= delta;
+                if (p.life <= 0) {
+                    scene.remove(p);
+                    sparkParticles.splice(i, 1);
+                }
+            }
+
+            for (let i = debrisParticles.length - 1; i >= 0; i--) {
+                const d = debrisParticles[i];
+                d.position.addScaledVector(d.vel, delta);
+                d.rotation.x += d.rotVel.x;
+                d.rotation.y += d.rotVel.y;
+                d.vel.y -= 25.0 * 0.8 * delta;
+                d.life -= delta;
+
+                if (d.position.y <= 0.1) {
+                    d.position.y = 0.1;
+                    d.vel.set(0, 0, 0);
+                }
+
+                if (d.life <= 0) {
+                    scene.remove(d);
+                    debrisParticles.splice(i, 1);
+                }
+            }
+
+            for (let i = dustParticles.length - 1; i >= 0; i--) {
+                const ds = dustParticles[i];
+                ds.position.addScaledVector(ds.vel, delta);
+                ds.scale.addScalar(delta * 0.8);
+                ds.material.opacity *= 0.95;
+                ds.life -= delta;
+                if (ds.life <= 0) {
+                    scene.remove(ds);
+                    dustParticles.splice(i, 1);
+                }
+            }
+
+            if (isBirdEyeActive) {
+                camera.position.set(birdEyeTarget.x, birdEyeZoom, birdEyeTarget.z);
+                camera.lookAt(birdEyeTarget.x, 0, birdEyeTarget.z);
+            } else {
+                const activeCar = cars[activeCarIndex];
+                if (activeCar) {
+                    birdEyeTarget.copy(activeCar.position);
+                    const camX = activeCar.position.x + cameraDistance * Math.sin(cameraAngleX) * Math.cos(cameraAngleY);
+                    const camY = activeCar.position.y + cameraDistance * Math.sin(cameraAngleY) + 1.0;
+                    const camZ = activeCar.position.z + cameraDistance * Math.cos(cameraAngleX) * Math.cos(cameraAngleY);
+                    camera.position.set(camX, camY, camZ);
+                    camera.lookAt(activeCar.position.clone().add(new THREE.Vector3(0, 0.8, 0)));
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.onload = initScene;
+    </script>
+</body>
+</html>
