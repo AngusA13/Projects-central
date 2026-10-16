@@ -144,7 +144,7 @@
                 <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
                     <i class="fa-solid fa-magnifying-glass text-sm"></i>
                 </div>
-                <input type="text" id="searchInput" placeholder="Search apps or games (e.g. F1, OS)..." 
+                <input type="text" id="searchInput" placeholder="Search apps or games..." 
                        class="w-full pl-10 pr-10 py-2 rounded-xl bg-slate-900/80 border border-white/10 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all">
                 <button id="clearSearch" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white">
                     <i class="fa-solid fa-xmark text-sm"></i>
@@ -155,7 +155,7 @@
             <div class="hidden lg:flex items-center gap-4 text-xs font-medium text-slate-400">
                 <div class="px-3 py-1.5 rounded-lg bg-slate-900/60 border border-white/5 flex items-center gap-2">
                     <i class="fa-solid fa-layer-group text-indigo-400"></i>
-                    <span>Total Projects: <strong id="totalCount" class="text-white">13</strong></span>
+                    <span>Total Projects: <strong id="totalCount" class="text-white">0</strong></span>
                 </div>
                 <div class="px-3 py-1.5 rounded-lg bg-slate-900/60 border border-white/5 flex items-center gap-2">
                     <i class="fa-regular fa-clock text-cyan-400"></i>
@@ -183,13 +183,13 @@
             <!-- Category Filter Tabs -->
             <div class="flex items-center bg-slate-900/80 p-1.5 rounded-xl border border-white/10 self-start md:self-auto overflow-x-auto max-w-full">
                 <button class="filter-btn active px-4 py-1.5 rounded-lg text-xs font-semibold transition-all text-white bg-indigo-600 shadow-sm" data-category="All">
-                    All <span class="ml-1 opacity-70 text-[10px]" id="countAll">(13)</span>
+                    All <span class="ml-1 opacity-70 text-[10px]" id="countAll">(0)</span>
                 </button>
                 <button class="filter-btn px-4 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-white/5" data-category="Games">
-                    <i class="fa-solid fa-gamepad mr-1.5 text-xs text-indigo-400"></i> Games <span class="ml-1 opacity-70 text-[10px]" id="countGames">(8)</span>
+                    <i class="fa-solid fa-gamepad mr-1.5 text-xs text-indigo-400"></i> Games <span class="ml-1 opacity-70 text-[10px]" id="countGames">(0)</span>
                 </button>
                 <button class="filter-btn px-4 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-white/5" data-category="Apps / Utilities">
-                    <i class="fa-solid fa-cubes mr-1.5 text-xs text-cyan-400"></i> Apps & Utilities <span class="ml-1 opacity-70 text-[10px]" id="countApps">(5)</span>
+                    <i class="fa-solid fa-cubes mr-1.5 text-xs text-cyan-400"></i> Apps & Utilities <span class="ml-1 opacity-70 text-[10px]" id="countApps">(0)</span>
                 </button>
             </div>
         </section>
@@ -269,7 +269,7 @@
 
     <!-- Application Data & Core Scripts -->
     <script>
-        // List of all 13 configured projects with custom styling metadata
+        // Full list of projects
         const projectsData = [
             {
                 title: "Car Crash Simulator",
@@ -379,7 +379,7 @@
                 badgeColor: "from-rose-500/20 to-red-500/20 text-rose-400 border-rose-500/30",
                 tags: ["Media", "Shorts", "Feed"]
             },
-          {
+            {
                 title: "Subway Surfers",
                 file: "Subway_surfers.html",
                 category: "Games",
@@ -387,6 +387,114 @@
                 icon: "fa-person-running",
                 badgeColor: "from-teal-500/20 to-emerald-500/20 text-teal-400 border-teal-500/30",
                 tags: ["Endless Runner", "Arcade", "Action"]
+            },
+            {
+                title: "Block Blast",
+                file: "clblockblastv2.html",
+                category: "Games",
+                description: "Addictive puzzle block placement game. Clear lines and beat your high score.",
+                icon: "fa-puzzle-piece",
+                badgeColor: "from-cyan-500/20 to-blue-500/20 text-cyan-400 border-cyan-500/30",
+                tags: ["Puzzle", "Strategy", "Arcade"]
+            },
+            {
+                title: "Drift Boss",
+                file: "cldriftboss.html",
+                category: "Games",
+                description: "Master endless drifting around tricky corners without falling off the platform.",
+                icon: "fa-car-side",
+                badgeColor: "from-pink-500/20 to-rose-500/20 text-pink-400 border-pink-500/30",
+                tags: ["Drifting", "Skill", "Arcade"]
+            },
+            {
+                title: "Drive Mad",
+                file: "cldrivemad.html",
+                category: "Games",
+                description: "Physics-based driving challenge across obstacle-heavy stunt tracks.",
+                icon: "fa-truck-monster",
+                badgeColor: "from-amber-500/20 to-yellow-500/20 text-amber-400 border-amber-500/30",
+                tags: ["Physics", "Driving", "Stunts"]
+            },
+            {
+                title: "Hill Climb Racing",
+                file: "chillclimbracinglite.html",
+                category: "Games",
+                description: "Drive vehicles up steep hills while balancing fuel and coin collection.",
+                icon: "fa-mountain",
+                badgeColor: "from-emerald-500/20 to-green-500/20 text-emerald-400 border-emerald-500/30",
+                tags: ["Racing", "Physics", "Classic"]
+            },
+            {
+                title: "Jelly Truck",
+                file: "cljellytruckgood.html",
+                category: "Games",
+                description: "Drive a wobbly, squishy jelly truck through bumpy obstacle levels.",
+                icon: "fa-truck",
+                badgeColor: "from-purple-500/20 to-pink-500/20 text-purple-400 border-purple-500/30",
+                tags: ["Wobbly", "Physics", "Fun"]
+            },
+            {
+                title: "Monster Tracks",
+                file: "clmonstertracks.html",
+                category: "Games",
+                description: "Crush cars and barrel over obstacles with a heavy-duty monster truck.",
+                icon: "fa-truck-pickup",
+                badgeColor: "from-red-500/20 to-orange-500/20 text-red-400 border-red-500/30",
+                tags: ["Monster Truck", "Action", "Stunts"]
+            },
+            {
+                title: "Moto X3M",
+                file: "clmotox3mm.html",
+                category: "Games",
+                description: "Time-trial motorcycle racing game featuring massive jumps and explosive hazards.",
+                icon: "fa-bicycle",
+                badgeColor: "from-orange-500/20 to-yellow-500/20 text-orange-400 border-orange-500/30",
+                tags: ["Bike", "Stunts", "Speed"]
+            },
+            {
+                title: "obbybike",
+                file: "clobbybike.html",
+                category: "Games",
+                description: "Navigate tricky obstacle courses (obbies) on two wheels.",
+                icon: "fa-person-biking",
+                badgeColor: "from-blue-500/20 to-indigo-500/20 text-blue-400 border-blue-500/30",
+                tags: ["Obby", "Skill", "Platformer"]
+            },
+            {
+                title: "Real Flight Simulator",
+                file: "clrealflightsim.html",
+                category: "Games",
+                description: "Immersive flight simulator testing takeoff, landing, and aerial maneuvers.",
+                icon: "fa-jet-fighter",
+                badgeColor: "from-sky-500/20 to-indigo-500/20 text-sky-400 border-sky-500/30",
+                tags: ["Simulation", "Flight", "3D"]
+            },
+            {
+                title: "Rocket League (Alt)",
+                file: "cirocketleague.html",
+                category: "Games",
+                description: "Alternative build or variant of vehicular soccer arcade action.",
+                icon: "fa-car",
+                badgeColor: "from-yellow-500/20 to-orange-500/20 text-yellow-400 border-yellow-500/30",
+                tags: ["Soccer", "Cars", "Action"]
+            },
+            {
+                title: "Slither.io",
+                file: "clslitherio.html",
+                category: "Games",
+                description: "Grow your snake by eating glowing pellets and cutting off other players.",
+                icon: "fa-worm",
+                badgeColor: "from-lime-500/20 to-emerald-500/20 text-lime-400 border-lime-500/30",
+                tags: ["Multiplayer", "Arcade", "Classic"]
+            },
+            {
+                title: "GTA 6 Web Edition",
+                file: "dta6.html",
+                category: "Games",
+                description: "Fan-made browser exploration concept inspired by open-world crime action.",
+                icon: "fa-city",
+                badgeColor: "from-rose-500/20 to-purple-500/20 text-rose-400 border-rose-500/30",
+                tags: ["Open World", "Action", "Concept"]
             }
         ];
 
@@ -413,7 +521,7 @@
         const modalIcon = document.getElementById("modalIcon");
         const frameLoader = document.getElementById("frameLoader");
 
-        // Initialize UI
+        // Initialize Hub
         function initHub() {
             renderProjects();
             startClock();
@@ -507,13 +615,13 @@
             projectIframe.src = filePath;
             
             playerModal.classList.remove("hidden");
-            document.body.style.overflow = "hidden"; // Prevent background scroll
+            document.body.style.overflow = "hidden";
         }
 
         // Close Modal
         function closeModal() {
             playerModal.classList.add("hidden");
-            projectIframe.src = "about:blank"; // Stop scripts/audio in background
+            projectIframe.src = "about:blank";
             document.body.style.overflow = "auto";
         }
 
