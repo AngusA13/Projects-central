@@ -1,405 +1,116 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#080e1b">
-<title>Project Central</title>
-<style>
-:root{--bg:#080e1b;--panel:#101a2c;--panel2:#14223a;--line:#243550;--text:#eef4ff;--muted:#93a5c0;--blue:#4285ff;--blue2:#6da4ff;--green:#43d6a0;--red:#ff7185;--yellow:#ffd166}
-*{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,Segoe UI,Arial,sans-serif}
-button,input,select,textarea{font:inherit}
-button{cursor:pointer}
-button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--blue2);outline-offset:2px}
-.app{display:flex;min-height:100vh}
-.sidebar{width:245px;flex-shrink:0;background:#0b1323;border-right:1px solid var(--line);padding:24px 16px;display:flex;flex-direction:column;gap:25px}
-.brand{display:flex;align-items:center;gap:12px;padding:0 7px}
-.brand-icon{width:43px;height:43px;border-radius:13px;display:grid;place-items:center;font-size:22px;font-weight:900;background:linear-gradient(135deg,#3983ff,#6b5cff)}
-.brand h1{font-size:17px;margin:0}.brand p{font-size:11px;color:var(--muted);margin:4px 0 0}
-.nav-label{font-size:10px;color:#6e83a3;font-weight:800;letter-spacing:1.7px;padding:0 11px;margin-bottom:9px}
-.nav{display:grid;gap:5px}
-.nav button{border:0;background:transparent;color:var(--muted);padding:12px;border-radius:11px;text-align:left;display:flex;align-items:center;gap:11px;font-size:13px}
-.nav button:hover,.nav button.active{background:#192b47;color:white}
-.nav button.active{box-shadow:inset 3px 0 var(--blue)}
-.nav .ico{width:20px;text-align:center;font-size:16px}
-.nav-count{margin-left:auto;color:#8195b5;font-size:11px}
-.sidebar-bottom{margin-top:auto}
-.storage-note{padding:15px;background:#111f35;border:1px solid var(--line);border-radius:14px;color:var(--muted);font-size:12px;line-height:1.7}
-.storage-note strong{color:white}
-.main{flex:1;min-width:0;padding:29px clamp(16px,3vw,42px) 45px}
-.topbar{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:27px}
-.breadcrumb{font-size:12px;color:var(--muted)}.breadcrumb b{color:var(--text)}
-.top-actions{display:flex;gap:9px;flex-wrap:wrap}
-.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);padding:10px 14px;border-radius:10px;font-size:12px;font-weight:700}
-.btn:hover{background:var(--panel2)}.btn.primary{background:var(--blue);border-color:var(--blue);color:white}.btn.primary:hover{background:#2c70ed}.btn.danger{color:var(--red)}
-.hero{border:1px solid #2b4772;border-radius:22px;padding:27px;background:radial-gradient(ellipse at 85% 15%,#244d893e,transparent 48%),linear-gradient(125deg,#132744,#101a2d 70%);display:flex;justify-content:space-between;align-items:center;gap:22px;margin-bottom:22px;overflow:hidden}
-.eyebrow{font-size:10px;letter-spacing:1.8px;color:#83b4ff;font-weight:900}
-.hero h2{font-size:clamp(25px,3vw,37px);margin:10px 0 9px;letter-spacing:-1.2px}
-.hero p{font-size:13px;line-height:1.7;color:#a8bad5;margin:0;max-width:510px}.hero-mark{font-size:74px;opacity:.85;flex-shrink:0}
-.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin-bottom:27px}
-.stat{background:var(--panel);border:1px solid var(--line);padding:17px;border-radius:15px}
-.stat-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:11px}
-.stat-value{font-size:28px;font-weight:800;margin-top:12px;letter-spacing:-.7px}.stat-sub{font-size:11px;color:var(--muted);margin-top:5px}
-.section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:27px 0 14px}
-.section-head h3{font-size:16px;margin:0}.section-head p{color:var(--muted);font-size:11px;margin:5px 0 0}
-.search-tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:13px}
-.search-wrap{position:relative;flex:1;min-width:180px}
-.search-wrap span{position:absolute;left:13px;top:11px;color:var(--muted)}
-.search-wrap input{width:100%;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:11px 12px 11px 37px;color:white}
-select,.field{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:125px}
-.filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:19px}
-.chip{background:transparent;color:var(--muted);border:1px solid var(--line);padding:8px 12px;border-radius:20px;font-size:11px}
-.chip:hover,.chip.active{background:#1d3d6c;border-color:#386fc1;color:#fff}
-.project-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.project-card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:17px;min-width:0;transition:.18s;display:flex;flex-direction:column;gap:12px}
-.project-card:hover{border-color:#426aa3;transform:translateY(-2px)}
-.card-top{display:flex;align-items:flex-start;gap:12px}
-.project-icon{width:45px;height:45px;flex-shrink:0;display:grid;place-items:center;font-size:22px;border-radius:13px;background:#1a2d4a;border:1px solid #294364;overflow:hidden}
-.card-heading{flex:1;min-width:0}.card-heading h4{font-size:14px;margin:2px 0 6px;overflow-wrap:anywhere}.card-heading small{color:var(--muted);font-size:10px}
-.fav{border:0;background:transparent;color:#6e819d;font-size:21px;padding:0 1px}.fav.on{color:var(--yellow)}
-.description{font-size:12px;line-height:1.65;color:#a1b2cc;min-height:39px}
-.badges{display:flex;gap:6px;flex-wrap:wrap}.badge{font-size:9px;padding:5px 8px;border-radius:6px;font-weight:800}
-.badge.ready{color:var(--green);background:#15392f}.badge.unverified{color:var(--yellow);background:#3a3020}.badge.unavailable{color:var(--red);background:#3b222c}.badge.category{color:#a9c8ff;background:#1a2b48}
-.card-meta{display:flex;justify-content:space-between;gap:8px;font-size:10px;color:var(--muted)}
-.card-actions{display:flex;gap:7px;margin-top:auto}.card-actions .btn{flex:1;padding:9px 7px;font-size:10px}.card-actions .icon-btn{flex:0 0 auto}
-.empty{grid-column:1/-1;padding:50px 20px;text-align:center;border:1px dashed var(--line);border-radius:15px;color:var(--muted)}
-.empty strong{display:block;color:var(--text);margin-bottom:8px}
-.recent-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
-.recent-item{display:flex;align-items:center;gap:11px;padding:13px;background:var(--panel);border:1px solid var(--line);border-radius:12px;cursor:pointer;min-width:0}
-.recent-item:hover{border-color:#426aa3}.recent-item .project-icon{width:38px;height:38px;font-size:18px}
-.recent-item strong{font-size:11px;display:block;overflow-wrap:anywhere}.recent-item small{font-size:10px;color:var(--muted)}
-.footer{margin-top:38px;padding-top:17px;border-top:1px solid var(--line);font-size:10px;color:#7084a2;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}
-.overlay{position:fixed;inset:0;background:#030711cc;z-index:10;display:none;align-items:center;justify-content:center;padding:18px;overflow:auto}
-.overlay.open{display:flex}
-.modal{width:min(620px,100%);max-height:92vh;overflow:auto;background:#101a2c;border:1px solid #314563;border-radius:19px;padding:23px;box-shadow:0 25px 100px #0008}
-.modal h2{font-size:20px;margin:0 0 7px}.modal-intro{font-size:12px;color:var(--muted);margin:0 0 20px;line-height:1.6}
-.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.form-group{display:flex;flex-direction:column;gap:7px;min-width:0}.form-group.full{grid-column:1/-1}
-.form-group label{font-size:11px;color:#b4c5df;font-weight:700}
-.form-group input,.form-group select,.form-group textarea{width:100%;min-width:0;background:#0b1424;border:1px solid var(--line);border-radius:9px;padding:10px;color:white}
-.form-group textarea{resize:vertical;min-height:85px}.checkline{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
-.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:20px;flex-wrap:wrap}
-.settings-grid{display:grid;gap:11px}.setting-row{display:flex;justify-content:space-between;gap:16px;align-items:center;background:#0c1627;border:1px solid var(--line);border-radius:12px;padding:14px}
-.setting-row strong{font-size:12px;display:block}.setting-row small{display:block;color:var(--muted);font-size:11px;margin-top:5px;line-height:1.5}
-.toast{position:fixed;bottom:22px;right:22px;background:#193b32;border:1px solid #2c775f;color:#caffeb;border-radius:11px;padding:12px 17px;font-size:12px;opacity:0;transform:translateY(10px);transition:.2s;pointer-events:none;z-index:20}
-.toast.show{opacity:1;transform:translateY(0)}.hidden{display:none!important}
-@media(max-width:1100px){.project-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.recent-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:760px){.app{display:block}.sidebar{width:100%;padding:14px;gap:14px;border-right:0;border-bottom:1px solid var(--line)}.brand{padding:0 3px}.nav-label{display:none}.nav{display:flex;overflow:auto;gap:6px}.nav button{white-space:nowrap;padding:10px}.nav .ico{width:auto}.nav-count{display:none}.sidebar-bottom{display:none}.main{padding:19px 14px 30px}.topbar{align-items:flex-start;flex-direction:column}.hero{padding:21px}.hero-mark{font-size:49px}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.project-grid{grid-template-columns:1fr}.recent-list{grid-template-columns:1fr 1fr}}
-@media(max-width:430px){.recent-list{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.form-group.full{grid-column:auto}.hero-mark{display:none}.top-actions{width:100%}.top-actions .btn{flex:1}}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Central</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<div class="app">
-<aside class="sidebar">
-  <div class="brand"><div class="brand-icon">P</div><div><h1>Project Central</h1><p>YOUR PROJECT UNIVERSE</p></div></div>
-  <div><div class="nav-label">WORKSPACE</div><nav class="nav" id="mainNav">
-    <button class="active" data-view="all"><span class="ico">▦</span>All projects <span class="nav-count" id="navAll">13</span></button>
-    <button data-view="recent"><span class="ico">◷</span>Recently opened</button>
-    <button data-view="favourites"><span class="ico">★</span>Favourites</button>
-  </nav></div>
-  <div><div class="nav-label">CATEGORIES</div><nav class="nav" id="categoryNav">
-    <button data-category="Games"><span class="ico">🎮</span>Games</button>
-    <button data-category="Web Apps"><span class="ico">◈</span>Web apps</button>
-    <button data-category="Operating Systems"><span class="ico">▣</span>Operating systems</button>
-    <button data-category="Engineering"><span class="ico">⚙</span>Engineering</button>
-    <button data-category="Experiments"><span class="ico">✧</span>Experiments</button>
-  </nav></div>
-  <div><div class="nav-label">MANAGE</div><nav class="nav">
-    <button id="addNav"><span class="ico">＋</span>Add project</button>
-    <button id="settingsNav"><span class="ico">⚙</span>Settings & backups</button>
-  </nav></div>
-  <div class="sidebar-bottom"><div class="storage-note"><strong>Local workspace</strong><br>Your edits and favourites are saved in this browser. Export a JSON backup to move your catalogue to another device.</div></div>
-</aside>
-<main class="main">
-  <div class="topbar"><div class="breadcrumb">Workspace / <b id="breadcrumb">All projects</b></div><div class="top-actions">
-    <button class="btn" id="importTop">↑ Import backup</button><button class="btn" id="exportTop">↓ Export backup</button><button class="btn primary" id="addTop">＋ New project</button>
-  </div></div>
-  <section class="hero"><div><div class="eyebrow">YOUR DIGITAL WORKSPACE</div><h2>Everything you build,<br>in one place.</h2><p>Games, web apps, operating systems and experiments. Keep track of your projects, launch files, and manage your growing collection.</p></div><div class="hero-mark">⌘</div></section>
-  <section class="stats">
-    <div class="stat"><div class="stat-top">Total projects <span>▦</span></div><div class="stat-value" id="totalStat">13</div><div class="stat-sub">Across your workspace</div></div>
-    <div class="stat"><div class="stat-top">Favourites <span>★</span></div><div class="stat-value" id="favStat">0</div><div class="stat-sub">Your pinned projects</div></div>
-    <div class="stat"><div class="stat-top">Ready to launch <span>↗</span></div><div class="stat-value" id="readyStat">0</div><div class="stat-sub">Files marked verified</div></div>
-    <div class="stat"><div class="stat-top">Categories <span>◫</span></div><div class="stat-value" id="categoryStat">3</div><div class="stat-sub">Project types in use</div></div>
-  </section>
-  <section id="recentSection"><div class="section-head"><div><h3>Recently opened</h3><p>Jump back into your latest projects.</p></div></div><div class="recent-list" id="recentList"></div></section>
-  <section><div class="section-head"><div><h3 id="projectHeading">All projects</h3><p id="projectSubheading">Your complete project catalogue.</p></div><button class="btn" id="clearFilters">Clear filters</button></div>
-    <div class="search-tools"><div class="search-wrap"><span>⌕</span><input id="searchInput" type="search" placeholder="Search projects, notes, versions…"></div><select id="sortSelect" aria-label="Sort projects"><option value="name">Name A–Z</option><option value="recent">Recently opened</option><option value="updated">Recently updated</option><option value="version">Version</option></select></div>
-    <div class="filters" id="statusFilters"><button class="chip active" data-status="all">All statuses</button><button class="chip" data-status="unverified">Unverified</button><button class="chip" data-status="ready">Verified</button><button class="chip" data-status="unavailable">Unavailable</button></div>
-    <div class="project-grid" id="projectGrid"></div>
-  </section>
-  <footer class="footer"><span>PROJECT CENTRAL · PERSONAL PROJECT MANAGER</span><span id="footerCount">13 projects · Saved locally</span></footer>
-</main>
-</div>
 
-<div class="overlay" id="projectOverlay"><div class="modal">
-  <h2 id="projectModalTitle">Add project</h2><p class="modal-intro">Edit project details. Use a relative filename for files in the same repository folder, or a full HTTPS URL.</p>
-  <form id="projectForm"><input type="hidden" id="projectId"><div class="form-grid">
-    <div class="form-group"><label for="pName">Project name *</label><input id="pName" required maxlength="100"></div>
-    <div class="form-group"><label for="pIcon">Icon / emoji</label><input id="pIcon" maxlength="8" value="📁"></div>
-    <div class="form-group"><label for="pCategory">Category</label><select id="pCategory"></select></div>
-    <div class="form-group"><label for="pVersion">Version</label><input id="pVersion" maxlength="40" placeholder="e.g. v1.0"></div>
-    <div class="form-group"><label for="pPath">Launch URL or filename</label><input id="pPath" maxlength="1000" placeholder="./my-game.html"></div>
-    <div class="form-group"><label for="pStatus">Launch status</label><select id="pStatus"><option value="unverified">Unverified</option><option value="ready">Verified working</option><option value="unavailable">Unavailable</option></select></div>
-    <div class="form-group full"><label for="pDescription">Description</label><textarea id="pDescription" maxlength="1000"></textarea></div>
-    <div class="form-group full"><label for="pNotes">Notes</label><textarea id="pNotes" maxlength="5000"></textarea></div>
-    <div class="form-group full"><label for="pScreenshot">Screenshot URL (optional)</label><input id="pScreenshot" maxlength="1000" placeholder="assets/my-game.png"></div>
-    <div class="form-group full"><label class="checkline"><input type="checkbox" id="pFavourite"> Add to favourites</label></div>
-  </div><div class="modal-actions"><button type="button" class="btn" id="cancelProject">Cancel</button><button type="submit" class="btn primary">Save project</button></div></form>
-</div></div>
+    <header>
+        <h1>🚀 Project Central</h1>
+        <p>A collection of everything I've built and created.</p>
+    </header>
 
-<div class="overlay" id="settingsOverlay"><div class="modal">
-  <h2>Settings & backups</h2><p class="modal-intro">Manage your local catalogue and transfer it between browsers.</p>
-  <div class="settings-grid">
-    <div class="setting-row"><div><strong>Export catalogue</strong><small>Download a JSON backup of your projects, settings, favourites and notes.</small></div><button class="btn primary" id="exportSettings">Export</button></div>
-    <div class="setting-row"><div><strong>Import catalogue</strong><small>Load a JSON backup and merge it with or replace your catalogue.</small></div><button class="btn" id="importSettings">Import</button></div>
-    <div class="setting-row"><div><strong>Reset filters</strong><small>Clear search, category and status filters.</small></div><button class="btn" id="resetFilters">Reset</button></div>
-    <div class="setting-row"><div><strong>Restore starter catalogue</strong><small>Restore the original 13 entries. This overwrites catalogue edits.</small></div><button class="btn danger" id="restoreStarter">Restore</button></div>
-    <div class="setting-row"><div><strong>Storage information</strong><small id="storageInfo">Saved in this browser.</small></div></div>
-  </div><div class="modal-actions"><button class="btn primary" id="closeSettings">Done</button></div>
-</div></div>
+    <main class="project-grid">
 
-<div class="overlay" id="importOverlay"><div class="modal">
-  <h2>Import backup</h2><p class="modal-intro">Choose a Project Central JSON backup.</p>
-  <div class="form-group"><label for="backupFile">JSON backup file</label><input id="backupFile" type="file" accept=".json,application/json"></div><div style="height:15px"></div>
-  <div class="form-group"><label for="importMode">Import mode</label><select id="importMode"><option value="merge">Merge with current projects</option><option value="replace">Replace current catalogue</option></select></div>
-  <div class="modal-actions"><button class="btn" id="cancelImport">Cancel</button><button class="btn primary" id="doImport">Import backup</button></div>
-</div></div>
-<div class="toast" id="toast" role="status" aria-live="polite"></div>
+        <!-- Car crash simulator -->
+        <div class="project-card">
+            <h2>Car Crash Simulator</h2>
+            <p>Test physics and drive vehicles in this simulator game.</p>
+            <a href="Car crash simulator.html" class="btn">Play Game</a>
+        </div>
 
-<script>
-"use strict";
+        <!-- Dirt Bike -->
+        <div class="project-card">
+            <h2>Dirt Bike</h2>
+            <p>Navigate obstacles and race on a dirt bike.</p>
+            <a href="dirt bike.html" class="btn">Play Game</a>
+        </div>
 
-const CATEGORIES=["Games","Web Apps","Operating Systems","Engineering","Experiments","Other"];
+        <!-- F1 Game -->
+        <div class="project-card">
+            <h2>F1 Game</h2>
+            <p>High-speed Formula 1 racing action.</p>
+            <a href="f1game.html" class="btn">Play Game</a>
+        </div>
 
-/* All starter HTML files are in the SAME directory as index.html.
-   Relative paths work on GitHub Pages for this repository layout. */
-const STARTER_PROJECTS=[
-{id:"car-crash",name:"Car Crash Simulator",icon:"🚗",category:"Games",version:"Unspecified",path:"./Car%20crash%20simulator.html",status:"unverified",description:"A car crash simulator game.",notes:"Original file: Car crash simulator.html",screenshot:"",favourite:false,updated:0,lastOpened:0},
-{id:"dirt-bike",name:"Dirt Bike",icon:"🏍️",category:"Games",version:"Unspecified",path:"./dirt%20bike.html",status:"unverified",description:"A dirt bike game.",notes:"Original file: dirt bike.html",screenshot:"",favourite:false,updated:0,lastOpened:0},
-{id:"f1-game",name:"F1 Game",icon:"🏎️",category:"Games",version:"Unspecified",path:"./f1game.html",status:"unverified",description:"A Formula 1 racing game.",notes:"Original file: f1game.html",screenshot:"",favourite:false,updated:0,lastOpened:0},
-{id:"file-sharing",name:"File Sharing",icon:"📁",category:"Web Apps",version:"Unspecified",path:"./File%20Sharing.html",status:"unverified",description:"A file-sharing web application.",notes:"Original file: File Sharing.html",screenshot:"",favourite:false,updated:0,lastOpened:0},
-{id:"messages",name:"Messages",icon:"💬",category:"Web Apps",version:"Unspecified",path:"./messages%20(1).html",status:"unverified",description:"A messaging application.",notes:"Original file: messages (1).html",screenshot:"",favourite:false,updated:0,lastOpened:0},
-{id:"minecraft",name:"Minecraft",icon:"⛏️",category:"Games",version:"Unspecified",path:"./minecraft.html",status:"unverified",description:"Your Minecraft project.",notes:"Original file: minecraft.html",screenshot:"",favourite:false,updated:0,lastOpened:0},
-{id:"neon-plane-dodger",name:"Neon Plane Dodger",icon:"✈️",category:"Games",version:"Unspecified",path:"./neon%20plane%20dodger.html",status:"unverified",description:"A neon plane dodging game.",notes:"Original file: neon plane dodger.html",screenshot:"",favourite:false,updated:0,lastOpened:0},
-{id:"novaos",name:"NovaOS",icon:"🖥️",category:"Operating Systems",version:"28",path:"./novaos%20(28).html",status:"unverified",description:"Your NovaOS project.",notes:"Original file: novaos (28).html",screenshot:"",favourite:false,updated:0,lastOpened:0},
-{id:"pixelcraft",name:"PixelCraft",icon:"🧱",category:"Games",version:"v8.6",path:"./Pixelcraft%20v8.6.html",status:"unverified",description:"Your PixelCraft sandbox game.",notes:"Original file: Pixelcraft v8.6.html",screenshot:"",favourite:false,updated:0,lastOpened:0},
-{id:"plane-game",name:"Plane Game",icon:"🛩️",category:"Games",version:"Unspecified",path:"./Plane%20Game.html",status:"unverified",description:"A plane game.",notes:"Original file: Plane Game.html",screenshot:"",favourite:false,updated:0,lastOpened:0},
-{id:"rocket-league",name:"Rocket League",icon:"🚙",category:"Games",version:"Unspecified",path:"./Rocket%20Leage.html",status:"unverified",description:"A Rocket League-inspired project.",notes:"Original file: Rocket Leage.html",screenshot:"",favourite:false,updated:0,lastOpened:0},
-{id:"shorts-flow",name:"Shorts Flow",icon:"📱",category:"Web Apps",version:"Unspecified",path:"./Shorts%20Flow.html",status:"unverified",description:"A short-form video browsing application.",notes:"Original file: Shorts Flow.html",screenshot:"",favourite:false,updated:0,lastOpened:0},
-{id:"subway-surfers",name:"Subway Surfers",icon:"🏃",category:"Games",version:"Unspecified",path:"./Subway%20surfers.html",status:"unverified",description:"An endless-runner game project.",notes:"Original file: Subway surfers.html",screenshot:"",favourite:false,updated:0,lastOpened:0}
-];
+        <!-- File Sharing -->
+        <div class="project-card">
+            <h2>File Sharing</h2>
+            <p>An interface tool for sharing files easily.</p>
+            <a href="File Sharing.html" class="btn">Open App</a>
+        </div>
 
-const STORAGE_KEY="projectCentral.catalogue.v1";
-const SETTINGS_KEY="projectCentral.settings.v1";
-let projects=[];
-let settings={showRecent:true};
-let currentView="all",currentCategory="",currentStatus="all",toastTimer;
-const $=id=>document.getElementById(id);
-const txt=v=>String(v??"");
-const esc=v=>txt(v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const clone=v=>JSON.parse(JSON.stringify(v));
-const makeId=()=>"project-"+Date.now().toString(36)+"-"+Math.random().toString(36).slice(2,8);
-const validStatus=s=>["ready","unverified","unavailable"].includes(s)?s:"unverified";
+        <!-- Messages -->
+        <div class="project-card">
+            <h2>Messages</h2>
+            <p>A chat or messaging interface project.</p>
+            <a href="messages (1).html" class="btn">Open App</a>
+        </div>
 
-function normaliseProject(p){
- return {
-  id:txt(p.id||makeId()).slice(0,150),name:txt(p.name||"Untitled project").slice(0,100),
-  icon:txt(p.icon||"📁").slice(0,8),category:CATEGORIES.includes(p.category)?p.category:"Other",
-  version:txt(p.version||"Unspecified").slice(0,40),path:txt(p.path||"").slice(0,1000),
-  status:validStatus(p.status),description:txt(p.description||"").slice(0,1000),
-  notes:txt(p.notes||"").slice(0,5000),screenshot:txt(p.screenshot||"").slice(0,1000),
-  favourite:!!p.favourite,updated:Number(p.updated)||0,lastOpened:Number(p.lastOpened)||0
- };
-}
-function loadData(){
- try{
-  const raw=localStorage.getItem(STORAGE_KEY);
-  if(raw){
-   const parsed=JSON.parse(raw);
-   projects=Array.isArray(parsed)&&parsed.every(p=>p&&typeof p==="object")?parsed.map(normaliseProject):clone(STARTER_PROJECTS).map(normaliseProject);
-  }else projects=clone(STARTER_PROJECTS).map(normaliseProject);
- }catch(e){projects=clone(STARTER_PROJECTS).map(normaliseProject)}
- try{settings={...settings,...JSON.parse(localStorage.getItem(SETTINGS_KEY)||"{}")}}catch(e){}
-}
-function saveData(){
- try{localStorage.setItem(STORAGE_KEY,JSON.stringify(projects));localStorage.setItem(SETTINGS_KEY,JSON.stringify(settings));return true}
- catch(e){showToast("Could not save: browser storage may be full or disabled.");return false}
-}
-function showToast(message){
- const el=$("toast");el.textContent=message;el.classList.add("show");
- clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove("show"),2800);
-}
-function statusLabel(s){return s==="ready"?"Verified working":s==="unavailable"?"Unavailable":"Unverified"}
-function safePath(path){
- const value=txt(path).trim();
- if(!value||/^(javascript|data|vbscript):/i.test(value)||value.startsWith("//"))return "";
- if(/^(https?:\/\/)/i.test(value))return value;
- return value;
-}
-function safeImage(path){
- const v=txt(path).trim();
- if(!v||/^(javascript|data|vbscript):/i.test(v)||v.startsWith("//"))return "";
- return v;
-}
-function launchProject(id){
- const p=projects.find(x=>x.id===id);if(!p)return;
- if(p.status==="unavailable"){showToast("This project is marked unavailable. Edit its status to try again.");return}
- const path=safePath(p.path);
- if(!path){openProjectEditor(id);showToast("Add a valid filename or URL first.");return}
- if(p.status!=="ready"&&!confirm("This project is marked unverified. Try opening it anyway?"))return;
- let url;
- try{
-  url=new URL(path,window.location.href);
-  if(!["https:","http:"].includes(url.protocol))throw new Error("Invalid protocol");
- }catch(e){showToast("Invalid launch path. Check the filename.");return}
- p.lastOpened=Date.now();saveData();render();
- window.open(url.href,"_blank","noopener,noreferrer");
-}
-function openProjectEditor(id){
- const p=id?projects.find(x=>x.id===id):null;
- $("projectModalTitle").textContent=p?"Edit project":"Add project";
- $("projectId").value=p?.id||"";$("pName").value=p?.name||"";
- $("pIcon").value=p?.icon||"📁";$("pCategory").value=p?.category||"Games";
- $("pVersion").value=p?.version||"v1.0";$("pPath").value=p?.path||"";
- $("pStatus").value=p?.status||"unverified";$("pDescription").value=p?.description||"";
- $("pNotes").value=p?.notes||"";$("pScreenshot").value=p?.screenshot||"";
- $("pFavourite").checked=!!p?.favourite;$("projectOverlay").classList.add("open");$("pName").focus();
-}
-function closeOverlay(id){$(id).classList.remove("open")}
-function fillCategories(){
- $("pCategory").innerHTML=CATEGORIES.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join("");
-}
-function getFilteredProjects(){
- const q=$("searchInput").value.trim().toLowerCase();
- let arr=projects.filter(p=>{
-  if(q&&![p.name,p.category,p.version,p.description,p.notes,p.path].join(" ").toLowerCase().includes(q))return false;
-  if(currentCategory&&p.category!==currentCategory)return false;
-  if(currentStatus!=="all"&&p.status!==currentStatus)return false;
-  if(currentView==="favourites"&&!p.favourite)return false;
-  if(currentView==="recent"&&!p.lastOpened)return false;
-  return true;
- });
- const sort=$("sortSelect").value;
- arr.sort((a,b)=>sort==="recent"?b.lastOpened-a.lastOpened||a.name.localeCompare(b.name):
- sort==="updated"?b.updated-a.updated||a.name.localeCompare(b.name):
- sort==="version"?b.version.localeCompare(a.version,undefined,{numeric:true})||a.name.localeCompare(b.name):a.name.localeCompare(b.name));
- return arr;
-}
-function renderCard(p){
- const shot=safeImage(p.screenshot);
- const icon=shot?`<img src="${esc(shot)}" alt="" style="width:45px;height:45px;object-fit:cover" onerror="this.style.display='none'">`:esc(p.icon);
- return `<article class="project-card">
-  <div class="card-top"><div class="project-icon">${icon}</div><div class="card-heading"><h4>${esc(p.name)}</h4><small>${esc(p.version)} · ${esc(p.category)}</small></div>
-  <button class="fav ${p.favourite?"on":""}" data-action="fav" data-id="${esc(p.id)}" aria-label="Toggle favourite">${p.favourite?"★":"☆"}</button></div>
-  <div class="description">${esc(p.description||"No description added yet.")}</div>
-  <div class="badges"><span class="badge ${p.status}">${esc(statusLabel(p.status))}</span><span class="badge category">${esc(p.category)}</span></div>
-  <div class="card-meta"><span>${p.path?"Launch path set":"No launch path"}</span><span>${p.lastOpened?"Opened "+esc(new Date(p.lastOpened).toLocaleDateString()):"Not opened yet"}</span></div>
-  ${p.notes?`<div style="font-size:11px;color:#8fa5c3;line-height:1.5;overflow-wrap:anywhere">📝 ${esc(p.notes.slice(0,140))}${p.notes.length>140?"…":""}</div>`:""}
-  <div class="card-actions"><button class="btn primary" data-action="launch" data-id="${esc(p.id)}">↗ Launch</button><button class="btn" data-action="edit" data-id="${esc(p.id)}">✎ Edit</button><button class="btn icon-btn" data-action="delete" data-id="${esc(p.id)}" title="Remove project" aria-label="Remove project">⌫</button></div>
- </article>`;
-}
-function renderRecent(){
- const recent=projects.filter(p=>p.lastOpened).sort((a,b)=>b.lastOpened-a.lastOpened).slice(0,3);
- $("recentSection").classList.toggle("hidden",!settings.showRecent);
- $("recentList").innerHTML=recent.length?recent.map(p=>`<div class="recent-item" role="button" tabindex="0" data-recent="${esc(p.id)}"><div class="project-icon">${esc(p.icon)}</div><div style="min-width:0"><strong>${esc(p.name)}</strong><small>${esc(p.version)} · ${esc(p.category)}</small></div></div>`).join(""):`<div class="empty" style="padding:20px;grid-column:1/-1"><strong>No recent projects yet</strong>Launch a project to see it here.</div>`;
-}
-function render(){
- const arr=getFilteredProjects();
- $("totalStat").textContent=projects.length;$("favStat").textContent=projects.filter(p=>p.favourite).length;
- $("readyStat").textContent=projects.filter(p=>p.status==="ready").length;
- $("categoryStat").textContent=new Set(projects.map(p=>p.category)).size;
- $("navAll").textContent=projects.length;$("footerCount").textContent=projects.length+" projects · Saved locally";
- const viewName=currentCategory||({all:"All projects",recent:"Recently opened",favourites:"Favourites"}[currentView]||"All projects");
- $("breadcrumb").textContent=viewName;$("projectHeading").textContent=viewName;
- $("projectSubheading").textContent=`Showing ${arr.length} of ${projects.length} projects.`;
- $("projectGrid").innerHTML=arr.length?arr.map(renderCard).join(""):`<div class="empty"><strong>No projects found</strong>Try another search or clear your filters.</div>`;
- $("mainNav").querySelectorAll("[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===currentView&&!currentCategory));
- $("categoryNav").querySelectorAll("[data-category]").forEach(b=>b.classList.toggle("active",b.dataset.category===currentCategory));
- $("statusFilters").querySelectorAll("[data-status]").forEach(b=>b.classList.toggle("active",b.dataset.status===currentStatus));
- renderRecent();
-}
-function setView(v){currentView=v;currentCategory="";render()}
-function setCategory(c){currentCategory=c;currentView="all";render()}
-function clearFilters(){$("searchInput").value="";$("sortSelect").value="name";currentView="all";currentCategory="";currentStatus="all";render()}
-function exportBackup(){
- const data={app:"Project Central",schemaVersion:1,exportedAt:new Date().toISOString(),projects,settings};
- const blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"});
- const url=URL.createObjectURL(blob);const a=document.createElement("a");
- a.href=url;a.download="project-central-backup.json";document.body.appendChild(a);a.click();a.remove();
- setTimeout(()=>URL.revokeObjectURL(url),1000);showToast("Backup exported.");
-}
-function openImport(){$("backupFile").value="";$("importOverlay").classList.add("open")}
-async function doImport(){
- const file=$("backupFile").files[0];if(!file){showToast("Choose a JSON backup first.");return}
- try{
-  const parsed=JSON.parse(await file.text());
-  const incoming=Array.isArray(parsed)?parsed:parsed.projects;
-  if(!Array.isArray(incoming)||!incoming.every(p=>p&&typeof p==="object"&&typeof p.name==="string"))throw new Error("Invalid Project Central backup.");
-  const clean=incoming.map(normaliseProject);
-  if($("importMode").value==="replace"){
-   if(!confirm("Replace your current catalogue? Export a backup first if needed."))return;
-   projects=clean;
-  }else{
-   const map=new Map(projects.map(p=>[p.id,p]));clean.forEach(p=>map.set(p.id,p));projects=Array.from(map.values());
-  }
-  if(!Array.isArray(parsed)&&parsed.settings&&typeof parsed.settings==="object")settings={...settings,...parsed.settings};
-  saveData();closeOverlay("importOverlay");clearFilters();showToast("Backup imported successfully.");
- }catch(e){showToast(e.message||"Could not import that backup.")}
-}
-function deleteProject(id){
- const p=projects.find(x=>x.id===id);if(!p)return;
- if(!confirm(`Remove "${p.name}" from the catalogue? The actual HTML file will not be deleted.`))return;
- projects=projects.filter(x=>x.id!==id);saveData();render();showToast("Project removed from catalogue.");
-}
-function restoreStarter(){
- if(!confirm("Restore the original 13 starter projects? This overwrites current catalogue edits."))return;
- projects=clone(STARTER_PROJECTS).map(normaliseProject);saveData();clearFilters();closeOverlay("settingsOverlay");showToast("Starter catalogue restored.");
-}
-function renderStorageInfo(){
- let size="Unavailable";try{size=(new Blob([JSON.stringify(projects)]).size/1024).toFixed(1)+" KB"}catch(e){}
- $("storageInfo").textContent=`Approximately ${size}. Saved in this browser's local storage, not shared across devices.`;
-}
+        <!-- Minecraft -->
+        <div class="project-card">
+            <h2>Minecraft</h2>
+            <p>Block-building adventure and exploration.</p>
+            <a href="minecraft.html" class="btn">Play Game</a>
+        </div>
 
-$("mainNav").addEventListener("click",e=>{const b=e.target.closest("[data-view]");if(b)setView(b.dataset.view)});
-$("categoryNav").addEventListener("click",e=>{const b=e.target.closest("[data-category]");if(b)setCategory(b.dataset.category)});
-$("statusFilters").addEventListener("click",e=>{const b=e.target.closest("[data-status]");if(b){currentStatus=b.dataset.status;render()}});
-$("projectGrid").addEventListener("click",e=>{
- const b=e.target.closest("[data-action]");if(!b)return;const id=b.dataset.id;
- if(b.dataset.action==="launch")launchProject(id);
- if(b.dataset.action==="edit")openProjectEditor(id);
- if(b.dataset.action==="delete")deleteProject(id);
- if(b.dataset.action==="fav"){const p=projects.find(x=>x.id===id);if(p){p.favourite=!p.favourite;saveData();render()}}
-});
-$("recentList").addEventListener("click",e=>{const item=e.target.closest("[data-recent]");if(item)launchProject(item.dataset.recent)});
-$("recentList").addEventListener("keydown",e=>{if((e.key==="Enter"||e.key===" ")&&e.target.matches("[data-recent]")){e.preventDefault();launchProject(e.target.dataset.recent)}});
-$("searchInput").addEventListener("input",render);$("sortSelect").addEventListener("change",render);
-$("clearFilters").addEventListener("click",clearFilters);
-$("resetFilters").addEventListener("click",()=>{clearFilters();closeOverlay("settingsOverlay");showToast("Filters reset.")});
-$("addNav").addEventListener("click",()=>openProjectEditor());$("addTop").addEventListener("click",()=>openProjectEditor());
-$("cancelProject").addEventListener("click",()=>closeOverlay("projectOverlay"));
-$("projectOverlay").addEventListener("click",e=>{if(e.target===$("projectOverlay"))closeOverlay("projectOverlay")});
-$("projectForm").addEventListener("submit",e=>{
- e.preventDefault();const id=$("projectId").value;const existing=projects.find(p=>p.id===id);const name=$("pName").value.trim();
- if(!name){showToast("Enter a project name.");return}
- const project=normaliseProject({id:id||makeId(),name,icon:$("pIcon").value.trim()||"📁",category:$("pCategory").value,
- version:$("pVersion").value.trim()||"Unspecified",path:$("pPath").value.trim(),status:$("pStatus").value,
- description:$("pDescription").value.trim(),notes:$("pNotes").value.trim(),screenshot:$("pScreenshot").value.trim(),
- favourite:$("pFavourite").checked,updated:Date.now(),lastOpened:existing?.lastOpened||0});
- if(existing)projects=projects.map(p=>p.id===id?project:p);else projects.push(project);
- saveData();closeOverlay("projectOverlay");render();showToast(existing?"Project updated.":"Project added.");
-});
-$("settingsNav").addEventListener("click",()=>{renderStorageInfo();$("settingsOverlay").classList.add("open")});
-$("closeSettings").addEventListener("click",()=>closeOverlay("settingsOverlay"));
-$("settingsOverlay").addEventListener("click",e=>{if(e.target===$("settingsOverlay"))closeOverlay("settingsOverlay")});
-$("exportTop").addEventListener("click",exportBackup);$("exportSettings").addEventListener("click",exportBackup);
-$("importTop").addEventListener("click",openImport);$("importSettings").addEventListener("click",openImport);
-$("cancelImport").addEventListener("click",()=>closeOverlay("importOverlay"));
-$("importOverlay").addEventListener("click",e=>{if(e.target===$("importOverlay"))closeOverlay("importOverlay")});
-$("doImport").addEventListener("click",doImport);$("restoreStarter").addEventListener("click",restoreStarter);
-document.addEventListener("keydown",e=>{if(e.key==="Escape")["projectOverlay","settingsOverlay","importOverlay"].forEach(closeOverlay)});
+        <!-- Neon Plane Dodger -->
+        <div class="project-card">
+            <h2>Neon Plane Dodger</h2>
+            <p>Dodge obstacles in a sleek neon environment.</p>
+            <a href="neon plane dodger.html" class="btn">Play Game</a>
+        </div>
 
-fillCategories();loadData();render();
-</script>
+        <!-- NovaOS -->
+        <div class="project-card">
+            <h2>NovaOS</h2>
+            <p>A custom web-based operating system project.</p>
+            <a href="novaos (28).html" class="btn">Launch OS</a>
+        </div>
+
+        <!-- Pixelcraft -->
+        <div class="project-card">
+            <h2>Pixelcraft v8.6</h2>
+            <p>Pixel art and building tool version 8.6.</p>
+            <a href="Pixelcraft v8.6.html" class="btn">Launch App</a>
+        </div>
+
+        <!-- Plane Game -->
+        <div class="project-card">
+            <h2>Plane Game</h2>
+            <p>Fly high and navigate through the skies.</p>
+            <a href="Plane Game.html" class="btn">Play Game</a>
+        </div>
+
+        <!-- Rocket League -->
+        <div class="project-card">
+            <h2>Rocket League</h2>
+            <p>Action-packed arcade style vehicular soccer.</p>
+            <a href="Rocket Leage.html" class="btn">Play Game</a>
+        </div>
+
+        <!-- Shorts Flow -->
+        <div class="project-card">
+            <h2>Shorts Flow</h2>
+            <p>A short-form video feed style project.</p>
+            <a href="Shorts Flow.html" class="btn">View App</a>
+        </div>
+
+        <!-- Subway Surfers -->
+        <div class="project-card">
+            <h2>Subway Surfers</h2>
+            <p>Endless runner dodging trains and obstacles.</p>
+            <a href="Subway Surfers.html" class="btn">Play Game</a>
+        </div>
+
+    </main>
+
+    <footer>
+        <p>Made with ❤️ | Hosted on GitHub</p>
+    </footer>
+
 </body>
 </html>
