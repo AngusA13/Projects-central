@@ -1,116 +1,596 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Project Central</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+    <title>Project Central | App & Game Hub</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#090d16',
+                        cardBg: 'rgba(22, 27, 34, 0.7)',
+                        cardBorder: 'rgba(255, 255, 255, 0.08)',
+                        cardBorderHover: 'rgba(99, 102, 241, 0.4)',
+                        accentPrimary: '#6366f1',
+                        accentSecondary: '#8b5cf6',
+                        accentCyan: '#06b6d4',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                    animation: {
+                        'pulse-glow': 'pulseGlow 3s infinite alternate',
+                    },
+                    keyframes: {
+                        pulseGlow: {
+                            '0%': { boxShadow: '0 0 15px rgba(99, 102, 241, 0.2)' },
+                            '100%': { boxShadow: '0 0 30px rgba(139, 92, 246, 0.5)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #090d16;
+            color: #f3f4f6;
+            overflow-x: hidden;
+        }
 
-    <header>
-        <h1>🚀 Project Central</h1>
-        <p>A collection of everything I've built and created.</p>
+        /* Glassmorphism effects */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.65);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card {
+            background: rgba(22, 27, 34, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            border-color: rgba(99, 102, 241, 0.4);
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px -10px rgba(99, 102, 241, 0.25);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #090d16;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #334155;
+        }
+
+        /* Ambient Glow Backgrounds */
+        .glow-sphere-1 {
+            position: absolute;
+            top: -100px;
+            left: 10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .glow-sphere-2 {
+            position: absolute;
+            top: 200px;
+            right: 5%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between relative selection:bg-indigo-500 selection:text-white">
+
+    <!-- Ambient Lighting FX -->
+    <div class="glow-sphere-1"></div>
+    <div class="glow-sphere-2"></div>
+
+    <!-- Navigation / Header -->
+    <header class="sticky top-0 z-40 glass-panel border-b border-white/10 px-4 lg:px-8 py-3 transition-all duration-200">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+            
+            <!-- Logo & Title -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid font-bold text-white text-lg fa-rocket"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-slate-200 to-slate-400">
+                        Project Central
+                    </h1>
+                    <p class="text-xs text-slate-400 flex items-center gap-2">
+                        <span>v2.5 Hub</span>
+                        <span class="inline-block w-1 h-1 rounded-full bg-slate-500"></span>
+                        <span class="text-emerald-400 font-medium flex items-center gap-1">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> Live Portal
+                        </span>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Global Search Bar -->
+            <div class="relative w-full md:w-80 lg:w-96">
+                <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <i class="fa-solid fa-magnifying-glass text-sm"></i>
+                </div>
+                <input type="text" id="searchInput" placeholder="Search apps or games (e.g. F1, OS)..." 
+                       class="w-full pl-10 pr-10 py-2 rounded-xl bg-slate-900/80 border border-white/10 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 transition-all">
+                <button id="clearSearch" class="hidden absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <!-- Stats / Time Badge -->
+            <div class="hidden lg:flex items-center gap-4 text-xs font-medium text-slate-400">
+                <div class="px-3 py-1.5 rounded-lg bg-slate-900/60 border border-white/5 flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-indigo-400"></i>
+                    <span>Total Projects: <strong id="totalCount" class="text-white">13</strong></span>
+                </div>
+                <div class="px-3 py-1.5 rounded-lg bg-slate-900/60 border border-white/5 flex items-center gap-2">
+                    <i class="fa-regular fa-clock text-cyan-400"></i>
+                    <span id="liveClock">--:--:--</span>
+                </div>
+            </div>
+
+        </div>
     </header>
 
-    <main class="project-grid">
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto w-full px-4 lg:px-8 py-8 flex-grow">
+        
+        <!-- Hero Banner / Control Header -->
+        <section class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-white/5">
+            <div>
+                <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight mb-2">
+                    Application Launcher
+                </h2>
+                <p class="text-slate-400 text-sm max-w-xl">
+                    Select any project below to play or run directly inside the embedded launcher preview or open in full window mode.
+                </p>
+            </div>
 
-        <!-- Car crash simulator -->
-        <div class="project-card">
-            <h2>Car Crash Simulator</h2>
-            <p>Test physics and drive vehicles in this simulator game.</p>
-            <a href="Car crash simulator.html" class="btn">Play Game</a>
+            <!-- Category Filter Tabs -->
+            <div class="flex items-center bg-slate-900/80 p-1.5 rounded-xl border border-white/10 self-start md:self-auto overflow-x-auto max-w-full">
+                <button class="filter-btn active px-4 py-1.5 rounded-lg text-xs font-semibold transition-all text-white bg-indigo-600 shadow-sm" data-category="All">
+                    All <span class="ml-1 opacity-70 text-[10px]" id="countAll">(13)</span>
+                </button>
+                <button class="filter-btn px-4 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-white/5" data-category="Games">
+                    <i class="fa-solid fa-gamepad mr-1.5 text-xs text-indigo-400"></i> Games <span class="ml-1 opacity-70 text-[10px]" id="countGames">(8)</span>
+                </button>
+                <button class="filter-btn px-4 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white hover:bg-white/5" data-category="Apps / Utilities">
+                    <i class="fa-solid fa-cubes mr-1.5 text-xs text-cyan-400"></i> Apps & Utilities <span class="ml-1 opacity-70 text-[10px]" id="countApps">(5)</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- No Results Box -->
+        <div id="noResults" class="hidden py-16 text-center">
+            <div class="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-800/80 flex items-center justify-center text-slate-500 text-2xl border border-white/5">
+                <i class="fa-solid fa-ghost"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-300 mb-1">No matching projects found</h3>
+            <p class="text-sm text-slate-500">Try adjusting your search query or filter settings.</p>
         </div>
 
-        <!-- Dirt Bike -->
-        <div class="project-card">
-            <h2>Dirt Bike</h2>
-            <p>Navigate obstacles and race on a dirt bike.</p>
-            <a href="dirt bike.html" class="btn">Play Game</a>
-        </div>
-
-        <!-- F1 Game -->
-        <div class="project-card">
-            <h2>F1 Game</h2>
-            <p>High-speed Formula 1 racing action.</p>
-            <a href="f1game.html" class="btn">Play Game</a>
-        </div>
-
-        <!-- File Sharing -->
-        <div class="project-card">
-            <h2>File Sharing</h2>
-            <p>An interface tool for sharing files easily.</p>
-            <a href="File Sharing.html" class="btn">Open App</a>
-        </div>
-
-        <!-- Messages -->
-        <div class="project-card">
-            <h2>Messages</h2>
-            <p>A chat or messaging interface project.</p>
-            <a href="messages (1).html" class="btn">Open App</a>
-        </div>
-
-        <!-- Minecraft -->
-        <div class="project-card">
-            <h2>Minecraft</h2>
-            <p>Block-building adventure and exploration.</p>
-            <a href="minecraft.html" class="btn">Play Game</a>
-        </div>
-
-        <!-- Neon Plane Dodger -->
-        <div class="project-card">
-            <h2>Neon Plane Dodger</h2>
-            <p>Dodge obstacles in a sleek neon environment.</p>
-            <a href="neon plane dodger.html" class="btn">Play Game</a>
-        </div>
-
-        <!-- NovaOS -->
-        <div class="project-card">
-            <h2>NovaOS</h2>
-            <p>A custom web-based operating system project.</p>
-            <a href="novaos (28).html" class="btn">Launch OS</a>
-        </div>
-
-        <!-- Pixelcraft -->
-        <div class="project-card">
-            <h2>Pixelcraft v8.6</h2>
-            <p>Pixel art and building tool version 8.6.</p>
-            <a href="Pixelcraft v8.6.html" class="btn">Launch App</a>
-        </div>
-
-        <!-- Plane Game -->
-        <div class="project-card">
-            <h2>Plane Game</h2>
-            <p>Fly high and navigate through the skies.</p>
-            <a href="Plane Game.html" class="btn">Play Game</a>
-        </div>
-
-        <!-- Rocket League -->
-        <div class="project-card">
-            <h2>Rocket League</h2>
-            <p>Action-packed arcade style vehicular soccer.</p>
-            <a href="Rocket Leage.html" class="btn">Play Game</a>
-        </div>
-
-        <!-- Shorts Flow -->
-        <div class="project-card">
-            <h2>Shorts Flow</h2>
-            <p>A short-form video feed style project.</p>
-            <a href="Shorts Flow.html" class="btn">View App</a>
-        </div>
-
-        <!-- Subway Surfers -->
-        <div class="project-card">
-            <h2>Subway Surfers</h2>
-            <p>Endless runner dodging trains and obstacles.</p>
-            <a href="Subway Surfers.html" class="btn">Play Game</a>
+        <!-- Project Grid -->
+        <div id="projectGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Dynamic project cards rendered here -->
         </div>
 
     </main>
 
-    <footer>
-        <p>Made with ❤️ | Hosted on GitHub</p>
+    <!-- Footer -->
+    <footer class="border-t border-white/5 glass-panel py-6 px-4 mt-12 text-center text-xs text-slate-500">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-2">
+                <span class="text-slate-400 font-semibold">Project Central</span>
+                <span>• Hosted via GitHub Pages</span>
+            </div>
+            <p>Designed for seamless local and remote deployment</p>
+        </div>
     </footer>
 
+    <!-- Interactive Embedded Player Modal -->
+    <div id="playerModal" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/80 backdrop-blur-md p-2 sm:p-4 md:p-6 transition-all duration-300">
+        <div class="relative w-full h-full max-w-6xl max-h-[92vh] bg-slate-900 border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+            
+            <!-- Modal Bar -->
+            <div class="flex items-center justify-between px-4 py-3 bg-slate-950 border-b border-white/10 text-xs sm:text-sm">
+                <div class="flex items-center space-x-3 overflow-hidden">
+                    <div id="modalIcon" class="w-7 h-7 rounded-lg bg-indigo-600/30 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
+                        <i class="fa-solid fa-gamepad"></i>
+                    </div>
+                    <div class="truncate">
+                        <h3 id="modalTitle" class="font-bold text-white truncate">Project Viewer</h3>
+                        <p id="modalPath" class="text-[11px] text-slate-500 truncate">filename.html</p>
+                    </div>
+                </div>
+
+                <!-- Modal Action Controls -->
+                <div class="flex items-center space-x-2 shrink-0">
+                    <button id="reloadModalBtn" title="Reload Canvas" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all border border-white/5">
+                        <i class="fa-solid fa-rotate-right text-xs"></i>
+                    </button>
+                    <a id="modalExternalBtn" href="#" target="_blank" title="Open in New Tab" class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition-all border border-white/5 flex items-center gap-1.5 text-xs">
+                        <i class="fa-solid fa-up-right-from-square text-xs"></i>
+                        <span class="hidden sm:inline">New Tab</span>
+                    </a>
+                    <button id="closeModalBtn" title="Close Launcher" class="p-2 rounded-lg bg-red-500/20 hover:bg-red-500/30 text-red-400 hover:text-red-300 transition-all border border-red-500/20">
+                        <i class="fa-solid fa-xmark text-sm"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Modal Frame Container -->
+            <div class="relative flex-grow bg-slate-950/80 w-full h-full overflow-hidden flex items-center justify-center">
+                <!-- Loading indicator -->
+                <div id="frameLoader" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 z-10 text-slate-400">
+                    <i class="fa-solid fa-circle-notch fa-spin text-3xl text-indigo-500 mb-3"></i>
+                    <p class="text-xs font-medium">Launching application environment...</p>
+                </div>
+
+                <!-- Active Project Iframe -->
+                <iframe id="projectIframe" class="w-full h-full border-0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; gamepad" allowfullscreen></iframe>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Application Data & Core Scripts -->
+    <script>
+        // List of all 13 configured projects with custom styling metadata
+        const projectsData = [
+            {
+                title: "Car Crash Simulator",
+                file: "Car crash simulator.html",
+                category: "Games",
+                description: "Realistic vehicle physics sandbox with collision mesh testing and destruction engine.",
+                icon: "fa-car-burst",
+                badgeColor: "from-amber-500/20 to-red-500/20 text-amber-400 border-amber-500/30",
+                tags: ["Physics", "3D", "Simulation"]
+            },
+            {
+                title: "Dirt Bike",
+                file: "dirt bike.html",
+                category: "Games",
+                description: "2D physics-based stunt racing game. Navigate treacherous dirt hills and perform backflips.",
+                icon: "fa-motorcycle",
+                badgeColor: "from-orange-500/20 to-amber-500/20 text-orange-400 border-orange-500/30",
+                tags: ["Racing", "2D Arcade", "Stunts"]
+            },
+            {
+                title: "F1 Game",
+                file: "f1game.html",
+                category: "Games",
+                description: "High-octane Formula 1 racing simulator with speed telemetry, tracks, and lap timers.",
+                icon: "fa-flag-checkered",
+                badgeColor: "from-red-500/20 to-rose-500/20 text-red-400 border-red-500/30",
+                tags: ["High Speed", "Motorsport", "Arcade"]
+            },
+            {
+                title: "File Sharing",
+                file: "File Sharing.html",
+                category: "Apps / Utilities",
+                description: "Utility tool for peer-to-peer file transfer, drag-and-drop file staging, and sharing.",
+                icon: "fa-share-nodes",
+                badgeColor: "from-blue-500/20 to-cyan-500/20 text-blue-400 border-blue-500/30",
+                tags: ["Utility", "Transfer", "Network"]
+            },
+            {
+                title: "Messages",
+                file: "messages (1).html",
+                category: "Apps / Utilities",
+                description: "Clean instant messaging user interface simulation with room feeds and status indicators.",
+                icon: "fa-comments",
+                badgeColor: "from-purple-500/20 to-indigo-500/20 text-purple-400 border-purple-500/30",
+                tags: ["Chat", "UI Concept", "Communication"]
+            },
+            {
+                title: "Minecraft",
+                file: "minecraft.html",
+                category: "Games",
+                description: "Voxel block-building web engine sandbox with terrain generation and breakable blocks.",
+                icon: "fa-cubes-stacked",
+                badgeColor: "from-emerald-500/20 to-teal-500/20 text-emerald-400 border-emerald-500/30",
+                tags: ["3D Voxel", "Sandbox", "Crafting"]
+            },
+            {
+                title: "Neon Plane Dodger",
+                file: "neon plane dodger.html",
+                category: "Games",
+                description: "Synthwave neon aesthetic action dodger. Fly through laser barriers at hyper speed.",
+                icon: "fa-plane-triangle-solid",
+                badgeColor: "from-fuchsia-500/20 to-pink-500/20 text-fuchsia-400 border-fuchsia-500/30",
+                tags: ["Neon", "Retro", "Infinite Flight"]
+            },
+            {
+                title: "NovaOS",
+                file: "novaos (28).html",
+                category: "Apps / Utilities",
+                description: "Comprehensive browser-based desktop operating system with windows, apps, and taskbar.",
+                icon: "fa-desktop",
+                badgeColor: "from-indigo-500/20 to-cyan-500/20 text-indigo-400 border-indigo-500/30",
+                tags: ["Web OS", "System", "Desktop"]
+            },
+            {
+                title: "Pixelcraft v8.6",
+                file: "Pixelcraft v8.6.html",
+                category: "Apps / Utilities",
+                description: "Feature-rich pixel art studio software for creating sprites, animations, and graphics.",
+                icon: "fa-palette",
+                badgeColor: "from-violet-500/20 to-purple-500/20 text-violet-400 border-violet-500/30",
+                tags: ["Creative", "Pixel Art", "Graphics"]
+            },
+            {
+                title: "Plane Game",
+                file: "Plane Game.html",
+                category: "Games",
+                description: "Aerial flight navigation and stunt control game with horizon flight dynamic visuals.",
+                icon: "fa-plane",
+                badgeColor: "from-sky-500/20 to-blue-500/20 text-sky-400 border-sky-500/30",
+                tags: ["Aviation", "Flight", "3D"]
+            },
+            {
+                title: "Rocket League",
+                file: "Rocket Leage.html",
+                category: "Games",
+                description: "Arcade vehicular soccer battle game with boosting rockets and high-flying ball goal physics.",
+                icon: "fa-futbol",
+                badgeColor: "from-yellow-500/20 to-amber-500/20 text-yellow-400 border-yellow-500/30",
+                tags: ["Soccer", "Cars", "Action"]
+            },
+            {
+                title: "Shorts Flow",
+                file: "Shorts Flow.html",
+                category: "Apps / Utilities",
+                description: "Modern vertical short-form content video viewer application with smooth touch scrolling.",
+                icon: "fa-clapperboard",
+                badgeColor: "from-rose-500/20 to-red-500/20 text-rose-400 border-rose-500/30",
+                tags: ["Media", "Shorts", "Feed"]
+            },
+            {
+                title: "Subway Surfers",
+                file: "Subway Surfers.html",
+                category: "Games",
+                description: "Fast-paced endless runner game dodging oncoming subway trains and grabbing powerups.",
+                icon: "fa-person-running",
+                badgeColor: "from-teal-500/20 to-emerald-500/20 text-teal-400 border-teal-500/30",
+                tags: ["Endless Runner", "Arcade", "Action"]
+            }
+        ];
+
+        // State tracking
+        let currentCategory = "All";
+        let searchQuery = "";
+
+        // DOM elements
+        const projectGrid = document.getElementById("projectGrid");
+        const noResults = document.getElementById("noResults");
+        const searchInput = document.getElementById("searchInput");
+        const clearSearch = document.getElementById("clearSearch");
+        const filterBtns = document.querySelectorAll(".filter-btn");
+        const liveClock = document.getElementById("liveClock");
+
+        // Modal DOM elements
+        const playerModal = document.getElementById("playerModal");
+        const closeModalBtn = document.getElementById("closeModalBtn");
+        const reloadModalBtn = document.getElementById("reloadModalBtn");
+        const modalExternalBtn = document.getElementById("modalExternalBtn");
+        const projectIframe = document.getElementById("projectIframe");
+        const modalTitle = document.getElementById("modalTitle");
+        const modalPath = document.getElementById("modalPath");
+        const modalIcon = document.getElementById("modalIcon");
+        const frameLoader = document.getElementById("frameLoader");
+
+        // Initialize UI
+        function initHub() {
+            renderProjects();
+            startClock();
+            updateCounts();
+
+            // Setup Iframe Event Listener for Loader
+            projectIframe.addEventListener('load', () => {
+                frameLoader.classList.add('hidden');
+            });
+        }
+
+        // Render Cards
+        function renderProjects() {
+            projectGrid.innerHTML = "";
+
+            const filtered = projectsData.filter(proj => {
+                const matchesCat = currentCategory === "All" || proj.category === currentCategory;
+                const matchesSearch = proj.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                                      proj.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                                      proj.tags.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
+                return matchesCat && matchesSearch;
+            });
+
+            if (filtered.length === 0) {
+                noResults.classList.remove("hidden");
+            } else {
+                noResults.classList.add("hidden");
+                filtered.forEach(proj => {
+                    const card = createCardElement(proj);
+                    projectGrid.appendChild(card);
+                });
+            }
+        }
+
+        // Generate Card HTML
+        function createCardElement(proj) {
+            const div = document.createElement("div");
+            div.className = "glass-card rounded-2xl p-5 flex flex-col justify-between group relative overflow-hidden";
+            
+            const tagsHTML = proj.tags.map(t => `<span class="px-2 py-0.5 rounded-md bg-slate-800/80 text-[10px] text-slate-400 border border-white/5 font-medium">${t}</span>`).join(" ");
+
+            div.innerHTML = `
+                <div>
+                    <!-- Header inside card -->
+                    <div class="flex items-start justify-between gap-3 mb-3">
+                        <div class="w-10 h-10 rounded-xl bg-slate-800/90 border border-white/10 flex items-center justify-center text-indigo-400 group-hover:text-indigo-300 group-hover:scale-110 transition-all duration-300">
+                            <i class="fa-solid ${proj.icon} text-lg"></i>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-full text-[10px] font-bold border bg-gradient-to-r ${proj.badgeColor}">
+                            ${proj.category}
+                        </span>
+                    </div>
+
+                    <!-- Title & Description -->
+                    <h3 class="text-lg font-bold text-white group-hover:text-indigo-300 transition-colors mb-1.5 flex items-center gap-1.5">
+                        ${proj.title}
+                    </h3>
+                    <p class="text-xs text-slate-400 leading-relaxed mb-4 line-clamp-2">
+                        ${proj.description}
+                    </p>
+                </div>
+
+                <div>
+                    <!-- Tags -->
+                    <div class="flex flex-wrap gap-1.5 mb-5">
+                        ${tagsHTML}
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="grid grid-cols-2 gap-2 pt-3 border-t border-white/5">
+                        <button onclick="launchModal('${proj.title}', '${proj.file}', '${proj.icon}')" class="w-full py-2 px-3 rounded-xl bg-indigo-600/20 hover:bg-indigo-600 text-indigo-300 hover:text-white border border-indigo-500/30 hover:border-indigo-500 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
+                            <i class="fa-solid fa-play text-[10px]"></i> Play Inline
+                        </button>
+                        <a href="${proj.file}" target="_blank" class="w-full py-2 px-3 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white border border-white/10 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all">
+                            <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> Open Tab
+                        </a>
+                    </div>
+                </div>
+            `;
+            return div;
+        }
+
+        // Open Modal Runner
+        window.launchModal = function(title, filePath, icon) {
+            modalTitle.textContent = title;
+            modalPath.textContent = filePath;
+            modalExternalBtn.href = filePath;
+            modalIcon.innerHTML = `<i class="fa-solid ${icon}"></i>`;
+            
+            frameLoader.classList.remove('hidden');
+            projectIframe.src = filePath;
+            
+            playerModal.classList.remove("hidden");
+            document.body.style.overflow = "hidden"; // Prevent background scroll
+        }
+
+        // Close Modal
+        function closeModal() {
+            playerModal.classList.add("hidden");
+            projectIframe.src = "about:blank"; // Stop scripts/audio in background
+            document.body.style.overflow = "auto";
+        }
+
+        // Event Listeners
+        closeModalBtn.addEventListener("click", closeModal);
+        
+        reloadModalBtn.addEventListener("click", () => {
+            if(projectIframe.src) {
+                frameLoader.classList.remove('hidden');
+                projectIframe.src = projectIframe.src;
+            }
+        });
+
+        // Close modal on backdrop click
+        playerModal.addEventListener("click", (e) => {
+            if (e.target === playerModal) closeModal();
+        });
+
+        // Search Input Handling
+        searchInput.addEventListener("input", (e) => {
+            searchQuery = e.target.value.trim();
+            clearSearch.classList.toggle("hidden", searchQuery === "");
+            renderProjects();
+        });
+
+        clearSearch.addEventListener("click", () => {
+            searchInput.value = "";
+            searchQuery = "";
+            clearSearch.classList.add("hidden");
+            renderProjects();
+        });
+
+        // Category Filter Tabs
+        filterBtns.forEach(btn => {
+            btn.addEventListener("click", () => {
+                filterBtns.forEach(b => {
+                    b.classList.remove("bg-indigo-600", "text-white", "shadow-sm");
+                    b.classList.add("text-slate-400");
+                });
+                btn.classList.add("bg-indigo-600", "text-white", "shadow-sm");
+                btn.classList.remove("text-slate-400");
+
+                currentCategory = btn.getAttribute("data-category");
+                renderProjects();
+            });
+        });
+
+        // Update Category Count Badges
+        function updateCounts() {
+            const gamesCount = projectsData.filter(p => p.category === "Games").length;
+            const appsCount = projectsData.filter(p => p.category === "Apps / Utilities").length;
+
+            document.getElementById("countAll").textContent = `(${projectsData.length})`;
+            document.getElementById("countGames").textContent = `(${gamesCount})`;
+            document.getElementById("countApps").textContent = `(${appsCount})`;
+            document.getElementById("totalCount").textContent = projectsData.length;
+        }
+
+        // Live Clock Indicator
+        function startClock() {
+            function updateTime() {
+                const now = new Date();
+                liveClock.textContent = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            }
+            updateTime();
+            setInterval(updateTime, 1000);
+        }
+
+        // ESC key listener for modal
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && !playerModal.classList.contains("hidden")) {
+                closeModal();
+            }
+        });
+
+        // Run on page load
+        window.onload = initHub;
+    </script>
 </body>
 </html>
